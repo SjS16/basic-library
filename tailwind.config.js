@@ -6,7 +6,11 @@ module.exports = {
     "./app/javascript/test.html"
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        serif: ['Libre Baskerville', 'Georgia', 'serif'],
+      },
+    },
   },
   plugins: [],
 };
