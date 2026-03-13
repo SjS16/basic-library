@@ -1,11 +1,16 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
-one:
-  name: MyString
-  standing: 1
-  email: MyString
+excellent_borrower:
+  name: "John Doe"
+  email: "john@example.com"
+  standing: 100
 
-two:
-  name: MyString
-  standing: 1
-  email: MyString
+good_borrower:
+  name: "Jane Smith"
+  email: "jane@example.com"
+  standing: 80
+
+low_standing_borrower:
+  name: "Bob Wilson"
+  email: "bob@example.com"
+  standing: 40

@@ -2,7 +2,7 @@ require "test_helper"
 
 class BooksControllerTest < ActionDispatch::IntegrationTest
   setup do
-    @book = books(:one)
+    @book = books(:available_book)
   end
 
   test "should get index" do

@@ -9,18 +9,10 @@ function BarcodeScanner({ onScan, onClose }) {
   const [manualISBN, setManualISBN] = useState("");
   const [showManualInput, setShowManualInput] = useState(false);
   const codeReaderRef = useRef(null);
-  const streamRef = useRef(null);
 
   useEffect(() => {
-    // Check if we're on HTTPS or localhost
-    const isSecureContext = window.isSecureContext;
-    if (!isSecureContext && window.location.hostname !== 'localhost') {
-      setError("Camera requires HTTPS on mobile devices.");
-      setShowManualInput(true);
-      setIsLoading(false);
-    } else {
-      startScanning();
-    }
+    // Try camera scanning first
+    startScanning();
     return () => stopScanning();
   }, []);
 
@@ -30,52 +22,73 @@ function BarcodeScanner({ onScan, onClose }) {
       setIsLoading(true);
       setError(null);
       
-      // First, get camera access using getUserMedia for better compatibility
-      const constraints = {
-        video: {
-          facingMode: { ideal: "environment" }, // Prefer back camera
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        }
-      };
-
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      streamRef.current = stream;
-      
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
-        setIsLoading(false);
-      }
-
-      // Now start the barcode reader
+      // Initialize the code reader
       const codeReader = new BrowserMultiFormatReader();
       codeReaderRef.current = codeReader;
 
-      codeReader.decodeFromVideoElement(
+      // Get available video devices
+      let devices = [];
+      try {
+        devices = await codeReader.listVideoInputDevices();
+      } catch (err) {
+        console.log("Could not list devices, using default camera");
+      }
+
+      // Select the back camera if available (for mobile)
+      let selectedDeviceId = undefined;
+      if (devices.length > 0) {
+        const backCamera = devices.find(device => 
+          /back|rear|environment/i.test(device.label)
+        );
+        selectedDeviceId = backCamera ? backCamera.deviceId : devices[0].deviceId;
+      }
+
+      console.log("Starting camera with device:", selectedDeviceId || "default");
+      
+      // Start continuous decode from video device
+      await codeReader.decodeFromVideoDevice(
+        selectedDeviceId,
         videoRef.current,
-        (result, error) => {
+        (result, err) => {
           if (result) {
             const barcode = result.getText();
-            console.log("Scanned barcode:", barcode);
+            console.log("✅ Barcode detected:", barcode);
+            
+            // Play success sound/vibration if available
+            if (window.navigator.vibrate) {
+              window.navigator.vibrate(200);
+            }
+            
             onScan(barcode);
             stopScanning();
           }
-          if (error && error.name !== "NotFoundException") {
-            console.error("Scan error:", error);
+          
+          // NotFoundException is normal - it means no barcode in current frame
+          if (err && err.name !== "NotFoundException") {
+            console.error("Decode error:", err);
           }
         }
       );
+
+      setIsLoading(false);
+      setIsScanning(true);
+      
     } catch (err) {
       console.error("Scanner error:", err);
       let errorMessage = "Failed to access camera.";
+      
       if (err.name === "NotAllowedError") {
-        errorMessage = "Camera access denied. Please allow camera permissions in your browser settings.";
+        errorMessage = "Camera access denied. Please allow camera permissions in your browser.";
       } else if (err.name === "NotFoundError") {
         errorMessage = "No camera found on this device.";
       } else if (err.name === "NotReadableError") {
         errorMessage = "Camera is already in use by another application.";
+      } else if (err.name === "NotSupportedError" || err.name === "TypeError") {
+        errorMessage = "Camera not supported. Your browser may not support camera access over HTTP.";
+      } else {
+        errorMessage = `Camera error: ${err.message || "Unknown error"}.`;
       }
+      
       setError(errorMessage);
       setIsScanning(false);
       setIsLoading(false);
@@ -85,10 +98,11 @@ function BarcodeScanner({ onScan, onClose }) {
 
   const stopScanning = () => {
     if (codeReaderRef.current) {
-      codeReaderRef.current.reset();
-    }
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
+      try {
+        codeReaderRef.current.reset();
+      } catch (e) {
+        console.log("Error stopping scanner:", e);
+      }
     }
     setIsScanning(false);
   };
@@ -141,7 +155,7 @@ function BarcodeScanner({ onScan, onClose }) {
             <form onSubmit={handleManualSubmit} className="mb-4">
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Enter ISBN Manually
+                  Enter ISBN Number
                 </label>
                 <p className="text-xs text-gray-600 mb-3">
                   Find the ISBN on the back of the book (usually a 10 or 13 digit number)
@@ -157,9 +171,19 @@ function BarcodeScanner({ onScan, onClose }) {
                 <button
                   type="submit"
                   disabled={!manualISBN.trim()}
-                  className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 transition-colors text-sm sm:text-base"
+                  className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 transition-colors text-sm sm:text-base mb-2"
                 >
                   Look Up Book
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowManualInput(false);
+                    startScanning();
+                  }}
+                  className="w-full px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm"
+                >
+                  📷 Try Camera Scanner Instead
                 </button>
               </div>
             </form>

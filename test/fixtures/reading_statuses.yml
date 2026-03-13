@@ -1,15 +1,22 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
-one:
-  borrower: one
-  book: one
-  status: 1
-  rating: 1
-  notes: MyText
+currently_reading:
+  borrower: good_borrower
+  book: checked_out_book
+  status: 1  # currently_reading
+  rating:
+  notes: "Halfway through"
 
-two:
-  borrower: two
-  book: two
-  status: 1
-  rating: 1
-  notes: MyText
+want_to_read:
+  borrower: good_borrower
+  book: available_book
+  status: 0  # want_to_read
+  rating:
+  notes: "Looks interesting"
+
+read_with_rating:
+  borrower: excellent_borrower
+  book: another_available_book
+  status: 2  # read
+  rating: 5
+  notes: "Excellent book!"

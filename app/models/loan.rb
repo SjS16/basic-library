@@ -6,7 +6,7 @@ class Loan < ApplicationRecord
   validate :borrower_can_checkout, on: :create
   validate :book_is_available, on: :create
   
-  before_create :set_defaults
+  before_validation :set_defaults, on: :create
   after_create :mark_book_unavailable
   after_save :update_book_availability, if: :saved_change_to_returned_at?
   after_save :update_borrower_standing, if: :saved_change_to_returned_at?
