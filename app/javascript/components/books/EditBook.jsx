@@ -2,13 +2,16 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getAuthHeaders } from "../../utils/csrf";
 import { useOpenLibrarySearch } from "../../hooks/useOpenLibrarySearch";
-import { fetchBookDetails } from "../../utils/openLibraryApi";
+import { fetchBookDetails, fetchBookByISBN } from "../../utils/openLibraryApi";
 import SearchResults from "./SearchResults";
 import BookForm from "./BookForm";
+import BarcodeScanner from "./BarcodeScanner";
 
 function EditBook() {
   const [book, setBook] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
+  const [showScanner, setShowScanner] = useState(false);
+  const [scanError, setScanError] = useState(null);
   const navigate = useNavigate();
   const { id } = useParams();
   const { searchResults, clearResults } = useOpenLibrarySearch(searchTerm);
@@ -47,6 +50,24 @@ function EditBook() {
     }
   };
 
+  const handleScanBarcode = async (barcode) => {
+    try {
+      setScanError(null);
+      setShowScanner(false);
+      
+      // Show loading message
+      alert("Looking up book by ISBN...");
+      
+      const bookDetails = await fetchBookByISBN(barcode);
+      setBook({ ...book, ...bookDetails });
+      alert("Book found! Details have been filled in.");
+    } catch (error) {
+      console.error("ISBN lookup failed:", error);
+      setScanError("Could not find book with that ISBN. Try entering details manually.");
+      setTimeout(() => setScanError(null), 5000);
+    }
+  };
+
   const saveBook = () => {
     const method = book.id ? "PUT" : "POST";
     const url = book.id ? `/books/${book.id}.json` : "/books.json";
@@ -67,6 +88,26 @@ function EditBook() {
   return (
     <div className="p-4 sm:p-6 bg-white rounded shadow max-w-2xl mx-auto">
       <h1 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">{pageHeading}</h1>
+
+      {/* Scan Error Message */}
+      {scanError && (
+        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <p className="text-yellow-800 text-sm">{scanError}</p>
+        </div>
+      )}
+
+      {/* Scan Barcode Button */}
+      {!id && (
+        <button
+          onClick={() => setShowScanner(true)}
+          className="w-full mb-4 px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 shadow-lg transition-all flex items-center justify-center gap-2 text-sm sm:text-base font-medium"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+          </svg>
+          Scan Book Barcode
+        </button>
+      )}
 
       <label className="block text-xs sm:text-sm text-gray-700 mb-1">Title:</label>
       <input
@@ -100,6 +141,14 @@ function EditBook() {
           Save Changes
         </button>
       </div>
+
+      {/* Barcode Scanner Modal */}
+      {showScanner && (
+        <BarcodeScanner
+          onScan={handleScanBarcode}
+          onClose={() => setShowScanner(false)}
+        />
+      )}
     </div>
   );
 }
