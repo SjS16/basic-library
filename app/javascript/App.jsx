@@ -2,7 +2,7 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 import "./stylesheets/application.tailwind.css";
 import NavBar from "./components/NavBar";
-import BooksList from "./components/Books/BooksList";
+import BooksList from "./components/books/BooksList";
 import ShowBook from "./components/books/ShowBook";
 import EditBook from "./components/books/EditBook";
 import BorrowersList from "./components/borrowers/BorrowersList";
