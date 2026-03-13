@@ -1,0 +1,15 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  borrower: one
+  book: one
+  checked_out_at: 2026-03-13 14:21:34
+  due_date: 2026-03-13 14:21:34
+  returned_at: 2026-03-13 14:21:34
+
+two:
+  borrower: two
+  book: two
+  checked_out_at: 2026-03-13 14:21:34
+  due_date: 2026-03-13 14:21:34
+  returned_at: 2026-03-13 14:21:34

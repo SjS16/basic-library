@@ -28,6 +28,9 @@
 !/tmp/storage/
 !/tmp/storage/.keep
 
+# Ignore database backups
+/db_backups/
+
 /public/assets
 
 # Ignore key files for decrypting credentials and more.

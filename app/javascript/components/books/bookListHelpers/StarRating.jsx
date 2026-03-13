@@ -1,18 +1,24 @@
-import React from "react";
+import React, { useState } from "react";
 
 function StarRating({ rating, setRating }) {
+  const [hover, setHover] = useState(0);
+
   return (
-    <div className="flex space-x-1">
+    <div className="flex gap-0.5">
       {[1, 2, 3, 4, 5].map((star) => (
         <button
           type="button"
           key={star}
           onClick={() => setRating(star)}
-          className="focus:outline-none"
+          onMouseEnter={() => setHover(star)}
+          onMouseLeave={() => setHover(0)}
+          className="focus:outline-none transition-transform hover:scale-110"
         >
           <svg
-            className={`w-6 h-6 ${
-              star <= rating ? "text-yellow-400" : "text-gray-300"
+            className={`w-5 h-5 transition-colors ${
+              star <= (hover || rating) 
+                ? "text-yellow-400" 
+                : "text-gray-300"
             }`}
             fill="currentColor"
             viewBox="0 0 20 20"

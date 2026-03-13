@@ -67,6 +67,8 @@ function BooksList() {
         return authorA.localeCompare(authorB);
       } else if (sortBy === "published_year") {
         return (b.published_year || 0) - (a.published_year || 0);
+      } else if (sortBy === "rating") {
+        return (b.rating || 0) - (a.rating || 0);
       }
       return 0;
     });
@@ -110,35 +112,98 @@ function BooksList() {
   };
 
   return (
-    <div>
-      <h2 className="text-2xl font-semibold mb-4">Books in the Library</h2>
-      <div className="flex space-between mb-4">
-        <div className="w-1/2">
+    <div className="max-w-7xl mx-auto">
+      {/* Header Section */}
+      <div className="mb-8">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-4xl font-bold text-gray-900 mb-2">My Library</h1>
+            <p className="text-gray-600">Manage and explore your book collection</p>
+          </div>
           <button
-            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+            className="px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
             onClick={() => navigate("/books/new")}
           >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
             Add New Book
           </button>
         </div>
-        <div className="w-1/2 flex flex-col space-y-2">
-          <Search onSearch={handleSearch} />
-          <BookFilter onFilter={handleFilter} />
-          <BookSort onSort={handleSort} />
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-3 gap-4 mb-6">
+          <div className="bg-white rounded-lg shadow p-5 border-l-4 border-blue-500">
+            <p className="text-sm text-gray-600 mb-1">Total Books</p>
+            <p className="text-3xl font-bold text-gray-900">{allBooks.length}</p>
+          </div>
+          <div className="bg-white rounded-lg shadow p-5 border-l-4 border-green-500">
+            <p className="text-sm text-gray-600 mb-1">Available</p>
+            <p className="text-3xl font-bold text-green-600">
+              {allBooks.filter(b => b.available).length}
+            </p>
+          </div>
+          <div className="bg-white rounded-lg shadow p-5 border-l-4 border-red-500">
+            <p className="text-sm text-gray-600 mb-1">Checked Out</p>
+            <p className="text-3xl font-bold text-red-600">
+              {allBooks.filter(b => !b.available).length}
+            </p>
+          </div>
+        </div>
+
+        {/* Search and Filters */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Search</label>
+              <Search onSearch={handleSearch} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Filter</label>
+              <BookFilter onFilter={handleFilter} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Sort</label>
+              <BookSort onSort={handleSort} />
+            </div>
+          </div>
         </div>
       </div>
 
-      <ul className="space-y-2">
-        {filteredBooks.map((book) => (
-          <BookItem
-            key={book.id}
-            book={book}
-            handleEdit={handleEdit}
-            handleDelete={handleDelete}
-            navigate={navigate}
-          />
-        ))}
-      </ul>
+      {/* Books List */}
+      {filteredBooks.length === 0 ? (
+        <div className="bg-white rounded-lg shadow p-12 text-center">
+          <svg className="w-24 h-24 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+          </svg>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">No books found</h3>
+          <p className="text-gray-600 mb-4">
+            {allBooks.length === 0 
+              ? "Get started by adding your first book to the library"
+              : "Try adjusting your search or filter criteria"}
+          </p>
+          {allBooks.length === 0 && (
+            <button
+              className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              onClick={() => navigate("/books/new")}
+            >
+              Add Your First Book
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {filteredBooks.map((book) => (
+            <BookItem
+              key={book.id}
+              book={book}
+              handleEdit={handleEdit}
+              handleDelete={handleDelete}
+              navigate={navigate}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

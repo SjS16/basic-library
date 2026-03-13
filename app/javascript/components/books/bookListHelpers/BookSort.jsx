@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 
-
 function BookSort({ onSort }) {
   const [sortBy, setSortBy] = useState("title");
 
@@ -10,15 +9,16 @@ function BookSort({ onSort }) {
   };
 
   return (
-    <div className="w-full mb-2">
-      <label className="block mb-2 font-semibold">Sort by:</label>
-      <select value={sortBy} onChange={handleChange} className="w-full p-2 border rounded">
-        <option value="title">Title (A-Z)</option>
-        <option value="author">Author (A-Z)</option>
-        <option value="published_year">Published Year (Newest First)</option>
-        <option value="rating">Rating (Highest First)</option>
-      </select>
-    </div>
+    <select 
+      value={sortBy} 
+      onChange={handleChange} 
+      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+    >
+      <option value="title">Title (A-Z)</option>
+      <option value="author">Author (A-Z)</option>
+      <option value="published_year">Year (Newest First)</option>
+      <option value="rating">Rating (Highest First)</option>
+    </select>
   );
 }
 
