@@ -16,21 +16,21 @@ function ShowBook() {
   }, [id]);
 
   return (
-    <div className="p-6 bg-white rounded shadow max-w-6xl mx-auto">
-      <div className="flex gap-8">
+    <div className="p-4 sm:p-6 bg-white rounded shadow max-w-6xl mx-auto">
+      <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
         {/* Left side - Cover and Edit button */}
-        <div className="w-1/2 flex flex-col items-center">
+        <div className="w-full lg:w-1/2 flex flex-col items-center">
           {book.cover_url ? (
             <img
               src={book.cover_url}
               alt={`${book.title} cover`}
-              className="w-full max-w-md rounded shadow-lg mb-6"
+              className="w-full max-w-sm lg:max-w-md rounded shadow-lg mb-4 sm:mb-6"
             />
           ) : (
-            <div className="w-full max-w-md aspect-[2/3] bg-gray-200 rounded shadow-lg mb-6 flex items-center justify-center">
-              <div className="text-center text-gray-500 p-8">
+            <div className="w-full max-w-sm lg:max-w-md aspect-[2/3] bg-gray-200 rounded shadow-lg mb-4 sm:mb-6 flex items-center justify-center">
+              <div className="text-center text-gray-500 p-6 sm:p-8">
                 <svg
-                  className="w-24 h-24 mx-auto mb-4"
+                  className="w-16 h-16 sm:w-24 sm:h-24 mx-auto mb-4"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -42,12 +42,12 @@ function ShowBook() {
                     d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
                   />
                 </svg>
-                <p className="text-lg">No cover image</p>
+                <p className="text-base sm:text-lg">No cover image</p>
               </div>
             </div>
           )}
           <button
-            className="px-6 py-3 bg-blue-600 text-white rounded hover:bg-blue-700 shadow"
+            className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-blue-600 text-white rounded hover:bg-blue-700 shadow text-sm sm:text-base"
             onClick={() => navigate(`/books/${book.id}/edit`)}
           >
             Edit Book
@@ -55,21 +55,21 @@ function ShowBook() {
         </div>
 
         {/* Right side - Book info */}
-        <div className="w-1/2 flex flex-col">
-          <div className="flex justify-between items-start mb-6">
-            <h1 className="text-3xl font-bold">{book.title}</h1>
+        <div className="w-full lg:w-1/2 flex flex-col">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 sm:gap-4 mb-4 sm:mb-6">
+            <h1 className="text-2xl sm:text-3xl font-bold">{book.title}</h1>
             {book.available ? (
-              <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold">
+              <span className="px-2 sm:px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs sm:text-sm font-semibold self-start">
                 Available
               </span>
             ) : (
-              <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-semibold">
+              <span className="px-2 sm:px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs sm:text-sm font-semibold self-start">
                 Checked Out
               </span>
             )}
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             <InfoField label="Author" value={book.author} />
             <InfoField label="Published Year" value={book.published_year} />
             <InfoField label="Genre" value={book.genre} />
@@ -80,17 +80,17 @@ function ShowBook() {
 
             {book.description && (
               <div>
-                <h2 className="text-sm font-semibold text-gray-600 uppercase mb-2">
+                <h2 className="text-xs sm:text-sm font-semibold text-gray-600 uppercase mb-2">
                   Description
                 </h2>
-                <p className="text-gray-700 leading-relaxed">{book.description}</p>
+                <p className="text-gray-700 leading-relaxed text-sm sm:text-base">{book.description}</p>
               </div>
             )}
           </div>
 
-          <div className="mt-8 pt-6 border-t">
+          <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t">
             <button
-              className="px-4 py-2 text-blue-600 hover:text-blue-800 hover:underline"
+              className="px-3 sm:px-4 py-2 text-sm sm:text-base text-blue-600 hover:text-blue-800 hover:underline"
               onClick={() => navigate("/books")}
             >
               ← Back to Library
@@ -107,10 +107,10 @@ function InfoField({ label, value }) {
   
   return (
     <div>
-      <h2 className="text-sm font-semibold text-gray-600 uppercase mb-1">
+      <h2 className="text-xs sm:text-sm font-semibold text-gray-600 uppercase mb-1">
         {label}
       </h2>
-      <p className="text-gray-900 text-lg">{value}</p>
+      <p className="text-gray-900 text-base sm:text-lg">{value}</p>
     </div>
   );
 }

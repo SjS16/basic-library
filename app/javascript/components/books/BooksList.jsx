@@ -112,58 +112,59 @@ function BooksList() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6">
       {/* Header Section */}
-      <div className="mb-8">
-        <div className="flex justify-between items-center mb-6">
+      <div className="mb-6 sm:mb-8">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
           <div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">My Library</h1>
-            <p className="text-gray-600">Manage and explore your book collection</p>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">My Library</h1>
+            <p className="text-sm sm:text-base text-gray-600">Manage and explore your book collection</p>
           </div>
           <button
-            className="px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
+            className="px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base whitespace-nowrap"
             onClick={() => navigate("/books/new")}
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            Add New Book
+            <span className="hidden sm:inline">Add New Book</span>
+            <span className="sm:hidden">Add Book</span>
           </button>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-3 gap-4 mb-6">
-          <div className="bg-white rounded-lg shadow p-5 border-l-4 border-blue-500">
-            <p className="text-sm text-gray-600 mb-1">Total Books</p>
-            <p className="text-3xl font-bold text-gray-900">{allBooks.length}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6">
+          <div className="bg-white rounded-lg shadow p-4 sm:p-5 border-l-4 border-blue-500">
+            <p className="text-xs sm:text-sm text-gray-600 mb-1">Total Books</p>
+            <p className="text-2xl sm:text-3xl font-bold text-gray-900">{allBooks.length}</p>
           </div>
-          <div className="bg-white rounded-lg shadow p-5 border-l-4 border-green-500">
-            <p className="text-sm text-gray-600 mb-1">Available</p>
-            <p className="text-3xl font-bold text-green-600">
+          <div className="bg-white rounded-lg shadow p-4 sm:p-5 border-l-4 border-green-500">
+            <p className="text-xs sm:text-sm text-gray-600 mb-1">Available</p>
+            <p className="text-2xl sm:text-3xl font-bold text-green-600">
               {allBooks.filter(b => b.available).length}
             </p>
           </div>
-          <div className="bg-white rounded-lg shadow p-5 border-l-4 border-red-500">
-            <p className="text-sm text-gray-600 mb-1">Checked Out</p>
-            <p className="text-3xl font-bold text-red-600">
+          <div className="bg-white rounded-lg shadow p-4 sm:p-5 border-l-4 border-red-500">
+            <p className="text-xs sm:text-sm text-gray-600 mb-1">Checked Out</p>
+            <p className="text-2xl sm:text-3xl font-bold text-red-600">
               {allBooks.filter(b => !b.available).length}
             </p>
           </div>
         </div>
 
         {/* Search and Filters */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="grid grid-cols-3 gap-4">
+        <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Search</label>
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Search</label>
               <Search onSearch={handleSearch} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Filter</label>
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Filter</label>
               <BookFilter onFilter={handleFilter} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Sort</label>
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Sort</label>
               <BookSort onSort={handleSort} />
             </div>
           </div>

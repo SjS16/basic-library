@@ -36,41 +36,41 @@ function EditBorrower() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <div className="bg-white rounded-lg shadow-lg p-8">
-        <h1 className="text-3xl font-bold mb-6">{pageHeading}</h1>
+    <div className="max-w-2xl mx-auto px-4 sm:px-6">
+      <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 lg:p-8">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">{pageHeading}</h1>
 
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
               Name *
             </label>
             <input
               type="text"
               value={borrower.name || ""}
               onChange={(e) => setBorrower({ ...borrower, name: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Enter borrower's name"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
               Email
             </label>
             <input
               type="email"
               value={borrower.email || ""}
               onChange={(e) => setBorrower({ ...borrower, email: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Enter email address (optional)"
             />
           </div>
 
           {id && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                 Standing: {borrower.standing}/100
               </label>
               <input
@@ -83,15 +83,15 @@ function EditBorrower() {
                 }
                 className="w-full"
               />
-              <p className="text-sm text-gray-500 mt-2">
+              <p className="text-xs sm:text-sm text-gray-500 mt-2">
                 Note: Standing is usually calculated automatically based on loan history
               </p>
             </div>
           )}
 
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h3 className="font-semibold text-blue-900 mb-2">Borrower Guidelines</h3>
-            <ul className="text-sm text-blue-800 space-y-1">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4">
+            <h3 className="text-sm sm:text-base font-semibold text-blue-900 mb-2">Borrower Guidelines</h3>
+            <ul className="text-xs sm:text-sm text-blue-800 space-y-1">
               <li>• Maximum 5 books at a time</li>
               <li>• Default loan period: 2 weeks</li>
               <li>• Standing must be 50+ to checkout books</li>
@@ -100,15 +100,15 @@ function EditBorrower() {
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 mt-8">
+        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 sm:gap-3 mt-6 sm:mt-8">
           <button
-            className="px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"
+            className="w-full sm:w-auto px-4 sm:px-6 py-2 text-sm sm:text-base bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"
             onClick={() => navigate("/borrowers")}
           >
             Cancel
           </button>
           <button
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="w-full sm:w-auto px-4 sm:px-6 py-2 text-sm sm:text-base bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
             onClick={saveBorrower}
             disabled={!borrower.name}
           >

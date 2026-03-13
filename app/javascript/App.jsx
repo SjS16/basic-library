@@ -13,7 +13,7 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-100">
       <NavBar />
-      <main className="pt-20 max-w-7xl mx-auto px-4">
+      <main className="pt-16 sm:pt-20 pb-8 sm:pb-12 max-w-7xl mx-auto px-4 sm:px-6">
         <Routes>
           <Route path="/books" element={<BooksList />} />
           <Route path="/books/:id" element={<ShowBook />} />
