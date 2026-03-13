@@ -1,6 +1,6 @@
 class ReadingStatusesController < ApplicationController
   before_action :set_borrower
-  before_action :set_reading_status, only: [:update, :destroy]
+  before_action :set_reading_status, only: [ :update, :destroy ]
 
   # POST /borrowers/:borrower_id/reading_statuses
   def create

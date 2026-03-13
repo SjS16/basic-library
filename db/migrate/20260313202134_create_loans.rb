@@ -9,8 +9,8 @@ class CreateLoans < ActiveRecord::Migration[8.1]
 
       t.timestamps
     end
-    
-    add_index :loans, [:book_id, :returned_at]
-    add_index :loans, [:borrower_id, :returned_at]
+
+    add_index :loans, [ :book_id, :returned_at ]
+    add_index :loans, [ :borrower_id, :returned_at ]
   end
 end

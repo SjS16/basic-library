@@ -1,5 +1,5 @@
 class BorrowersController < ApplicationController
-  before_action :set_borrower, only: [:show, :edit, :update, :destroy, :checkout_book, :return_book]
+  before_action :set_borrower, only: [ :show, :edit, :update, :destroy, :checkout_book, :return_book ]
 
   # GET /borrowers or /borrowers.json
   def index
@@ -14,7 +14,7 @@ class BorrowersController < ApplicationController
   def show
     respond_to do |format|
       format.html
-      format.json { 
+      format.json {
         render json: @borrower.as_json(
           include: {
             current_loans: {
@@ -24,7 +24,7 @@ class BorrowersController < ApplicationController
               include: :book
             }
           },
-          methods: [:standing_status, :standing_color]
+          methods: [ :standing_status, :standing_color ]
         )
       }
     end
@@ -80,7 +80,7 @@ class BorrowersController < ApplicationController
   # POST /borrowers/1/checkout_book
   def checkout_book
     book = Book.find(params[:book_id])
-    
+
     loan = @borrower.loans.build(
       book: book,
       checked_out_at: Time.current,
@@ -101,7 +101,7 @@ class BorrowersController < ApplicationController
   # POST /borrowers/1/return_book
   def return_book
     loan = @borrower.current_loans.find_by(book_id: params[:book_id])
-    
+
     respond_to do |format|
       if loan&.return_book!
         format.html { redirect_to @borrower, notice: "Book returned successfully." }

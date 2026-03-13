@@ -26,7 +26,7 @@ class BorrowersControllerTest < ActionDispatch::IntegrationTest
   test "should show borrower as json with reading statuses" do
     get borrower_url(@borrower), as: :json
     assert_response :success
-    
+
     json_response = JSON.parse(response.body)
     assert json_response.key?("reading_statuses")
     assert json_response.key?("current_loans")
@@ -35,21 +35,21 @@ class BorrowersControllerTest < ActionDispatch::IntegrationTest
 
   test "should create borrower" do
     assert_difference("Borrower.count") do
-      post borrowers_url, params: { 
-        borrower: { 
-          name: "New Borrower", 
-          email: "new@example.com" 
-        } 
+      post borrowers_url, params: {
+        borrower: {
+          name: "New Borrower",
+          email: "new@example.com"
+        }
       }, as: :json
     end
     assert_response :created
   end
 
   test "should update borrower" do
-    patch borrower_url(@borrower), params: { 
-      borrower: { name: "Updated Name" } 
+    patch borrower_url(@borrower), params: {
+      borrower: { name: "Updated Name" }
     }, as: :json
-    
+
     assert_response :success
     @borrower.reload
     assert_equal "Updated Name", @borrower.name
@@ -57,11 +57,11 @@ class BorrowersControllerTest < ActionDispatch::IntegrationTest
 
   test "should checkout book" do
     @book.update(available: true)
-    
-    post checkout_book_borrower_url(@borrower), params: { 
-      book_id: @book.id 
+
+    post checkout_book_borrower_url(@borrower), params: {
+      book_id: @book.id
     }, as: :json
-    
+
     assert_response :success
     @book.reload
     refute @book.available
@@ -70,11 +70,11 @@ class BorrowersControllerTest < ActionDispatch::IntegrationTest
   test "should not checkout book when standing too low" do
     @borrower.update(standing: 30)
     @book.update(available: true)
-    
-    post checkout_book_borrower_url(@borrower), params: { 
-      book_id: @book.id 
+
+    post checkout_book_borrower_url(@borrower), params: {
+      book_id: @book.id
     }, as: :json
-    
+
     assert_response :unprocessable_entity
   end
 
@@ -85,11 +85,11 @@ class BorrowersControllerTest < ActionDispatch::IntegrationTest
       due_date: 14.days.from_now
     )
     @book.update(available: false)
-    
-    post return_book_borrower_url(@borrower), params: { 
-      book_id: @book.id 
+
+    post return_book_borrower_url(@borrower), params: {
+      book_id: @book.id
     }, as: :json
-    
+
     assert_response :success
     @book.reload
     assert @book.available
@@ -99,7 +99,7 @@ class BorrowersControllerTest < ActionDispatch::IntegrationTest
 
   test "should destroy borrower" do
     borrower = Borrower.create!(name: "To Delete", email: "delete@example.com")
-    
+
     assert_difference("Borrower.count", -1) do
       delete borrower_url(borrower), as: :json
     end

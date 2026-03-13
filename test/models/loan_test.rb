@@ -4,9 +4,9 @@ class LoanTest < ActiveSupport::TestCase
   test "should create loan with default due date" do
     book = books(:available_book)
     borrower = borrowers(:excellent_borrower)
-    
+
     loan = Loan.create!(book: book, borrower: borrower)
-    
+
     assert_not_nil loan.due_date
     assert loan.due_date > Time.current
   end
@@ -14,23 +14,23 @@ class LoanTest < ActiveSupport::TestCase
   test "should mark book unavailable after checkout" do
     book = books(:available_book)
     borrower = borrowers(:excellent_borrower)
-    
+
     assert book.available
-    
+
     loan = borrower.loans.create!(book: book, due_date: 14.days.from_now)
     book.reload
-    
+
     refute book.available
   end
 
   test "should mark book available after return" do
     loan = loans(:active_loan)
     book = loan.book
-    
+
     book.update(available: false)
     loan.update(returned_at: Time.current)
     book.reload
-    
+
     assert book.available
   end
 

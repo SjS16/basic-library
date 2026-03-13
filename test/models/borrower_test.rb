@@ -57,13 +57,13 @@ class BorrowerTest < ActiveSupport::TestCase
   test "update_standing decreases standing for late returns" do
     borrower = borrowers(:excellent_borrower)
     initial_standing = borrower.standing
-    
+
     # Create an overdue loan
     loan = borrower.loans.create!(
       book: books(:available_book),
       due_date: 5.days.ago
     )
-    
+
     borrower.update_standing!
     assert borrower.standing < initial_standing
   end

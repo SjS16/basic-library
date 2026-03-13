@@ -9,7 +9,7 @@ class ReadingStatusesControllerTest < ActionDispatch::IntegrationTest
 
   test "should create reading status" do
     new_book = books(:another_available_book)
-    
+
     assert_difference("ReadingStatus.count") do
       post borrower_reading_statuses_url(@borrower), params: {
         reading_status: {
@@ -18,7 +18,7 @@ class ReadingStatusesControllerTest < ActionDispatch::IntegrationTest
         }
       }, as: :json
     end
-    
+
     assert_response :created
     json_response = JSON.parse(response.body)
     assert_equal "want_to_read", json_response["status"]
@@ -31,7 +31,7 @@ class ReadingStatusesControllerTest < ActionDispatch::IntegrationTest
         status: "currently_reading"
       }
     }, as: :json
-    
+
     assert_response :unprocessable_entity
   end
 
@@ -43,7 +43,7 @@ class ReadingStatusesControllerTest < ActionDispatch::IntegrationTest
         notes: "Great book!"
       }
     }, as: :json
-    
+
     assert_response :success
     @reading_status.reload
     assert_equal "read", @reading_status.status
@@ -54,7 +54,7 @@ class ReadingStatusesControllerTest < ActionDispatch::IntegrationTest
     assert_difference("ReadingStatus.count", -1) do
       delete borrower_reading_status_url(@borrower, @reading_status), as: :json
     end
-    
+
     assert_response :no_content
   end
 end

@@ -4,17 +4,17 @@ Rails.application.routes.draw do
       post :checkout_book
       post :return_book
     end
-    resources :reading_statuses, only: [:create, :update, :destroy]
+    resources :reading_statuses, only: [ :create, :update, :destroy ]
   end
-  
-  resources :loans, only: [:index, :show, :create, :update]
-  
+
+  resources :loans, only: [ :index, :show, :create, :update ]
+
   resources :books do
     collection do
       get :open_library
     end
   end
-  
+
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
