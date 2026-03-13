@@ -69,6 +69,10 @@ function BooksList() {
         return (b.published_year || 0) - (a.published_year || 0);
       } else if (sortBy === "rating") {
         return (b.rating || 0) - (a.rating || 0);
+      } else if (sortBy === "recently_added") {
+        const dateA = new Date(a.created_at || 0);
+        const dateB = new Date(b.created_at || 0);
+        return dateB - dateA; // Newest first
       }
       return 0;
     });

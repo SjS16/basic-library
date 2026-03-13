@@ -18,6 +18,7 @@ function BookSort({ onSort }) {
       <option value="author">Author (A-Z)</option>
       <option value="published_year">Year (Newest First)</option>
       <option value="rating">Rating (Highest First)</option>
+      <option value="recently_added">Recently Added</option>
     </select>
   );
 }
