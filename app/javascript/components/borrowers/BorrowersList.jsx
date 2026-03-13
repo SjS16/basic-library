@@ -48,7 +48,7 @@ function BorrowersList() {
             <p className="text-sm sm:text-base text-gray-600">Manage library members and their loan status</p>
           </div>
           <button
-            className="px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base whitespace-nowrap"
+            className="px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-amber-800 to-amber-900 text-amber-50 rounded-lg hover:from-amber-900 hover:to-amber-950 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base whitespace-nowrap"
             onClick={() => navigate("/borrowers/new")}
           >
             <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -61,23 +61,23 @@ function BorrowersList() {
 
         {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
-          <div className="bg-white rounded-lg shadow p-4 sm:p-5 border-l-4 border-blue-500">
+          <div className="bg-white rounded-lg shadow p-4 sm:p-5 border-l-4 border-amber-900">
             <p className="text-xs sm:text-sm text-gray-600 mb-1">Total Borrowers</p>
             <p className="text-2xl sm:text-3xl font-bold text-gray-900">{borrowers.length}</p>
           </div>
-          <div className="bg-white rounded-lg shadow p-4 sm:p-5 border-l-4 border-green-500">
+          <div className="bg-white rounded-lg shadow p-4 sm:p-5 border-l-4 border-amber-700">
             <p className="text-xs sm:text-sm text-gray-600 mb-1">Excellent Standing</p>
-            <p className="text-2xl sm:text-3xl font-bold text-green-600">
+            <p className="text-2xl sm:text-3xl font-bold text-amber-700">
               {borrowers.filter((b) => b.standing >= 90).length}
             </p>
           </div>
-          <div className="bg-white rounded-lg shadow p-4 sm:p-5 border-l-4 border-yellow-500">
+          <div className="bg-white rounded-lg shadow p-4 sm:p-5 border-l-4 border-amber-500">
             <p className="text-xs sm:text-sm text-gray-600 mb-1">Fair Standing</p>
-            <p className="text-2xl sm:text-3xl font-bold text-yellow-600">
+            <p className="text-2xl sm:text-3xl font-bold text-amber-600">
               {borrowers.filter((b) => b.standing >= 50 && b.standing < 70).length}
             </p>
           </div>
-          <div className="bg-white rounded-lg shadow p-4 sm:p-5 border-l-4 border-red-500">
+          <div className="bg-white rounded-lg shadow p-4 sm:p-5 border-l-4 border-red-600">
             <p className="text-xs sm:text-sm text-gray-600 mb-1">Restricted</p>
             <p className="text-2xl sm:text-3xl font-bold text-red-600">
               {borrowers.filter((b) => b.standing < 50).length}
@@ -95,7 +95,7 @@ function BorrowersList() {
           <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">No borrowers yet</h3>
           <p className="text-sm sm:text-base text-gray-600 mb-4">Add your first library member to get started</p>
           <button
-            className="px-4 sm:px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base"
+            className="px-4 sm:px-6 py-2 bg-amber-800 text-amber-50 rounded-lg hover:bg-amber-900 transition-colors text-sm sm:text-base"
             onClick={() => navigate("/borrowers/new")}
           >
             Add First Borrower

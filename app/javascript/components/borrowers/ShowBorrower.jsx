@@ -173,7 +173,7 @@ function ShowBorrower() {
                     </p>
                     <button
                       onClick={() => handleReturn(loan.book.id)}
-                      className="w-full px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors text-xs sm:text-sm font-medium"
+                      className="w-full px-3 py-2 bg-amber-700 text-amber-50 rounded hover:bg-amber-800 transition-colors text-xs sm:text-sm font-medium"
                     >
                       Return Book
                     </button>
@@ -216,7 +216,7 @@ function ShowBorrower() {
               <button
                 onClick={handleCheckout}
                 disabled={!selectedBookId}
-                className="w-full px-4 py-2 sm:py-3 text-sm sm:text-base bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-medium"
+                className="w-full px-4 py-2 sm:py-3 text-sm sm:text-base bg-amber-800 text-amber-50 rounded-lg hover:bg-amber-900 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-medium"
               >
                 Checkout Selected Book
               </button>

@@ -74,21 +74,21 @@ function Home() {
             </div>
           </div>
 
-          <div className="bg-green-50 border-2 border-green-800 shadow-lg p-6 transition-all hover:shadow-xl">
+          <div className="bg-amber-100 border-2 border-amber-800 shadow-lg p-6 transition-all hover:shadow-xl">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-serif font-semibold text-green-800 uppercase tracking-wide">On Shelves</p>
-                <p className="text-4xl font-serif font-bold text-green-900 mt-2">{stats.availableBooks}</p>
+                <p className="text-sm font-serif font-semibold text-amber-800 uppercase tracking-wide">On Shelves</p>
+                <p className="text-4xl font-serif font-bold text-amber-900 mt-2">{stats.availableBooks}</p>
               </div>
               <div className="text-5xl opacity-50">✓</div>
             </div>
           </div>
 
-          <div className="bg-stone-100 border-2 border-stone-800 shadow-lg p-6 transition-all hover:shadow-xl">
+          <div className="bg-amber-50 border-2 border-amber-700 shadow-lg p-6 transition-all hover:shadow-xl">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-serif font-semibold text-stone-800 uppercase tracking-wide">Members</p>
-                <p className="text-4xl font-serif font-bold text-stone-900 mt-2">{stats.totalBorrowers}</p>
+                <p className="text-sm font-serif font-semibold text-amber-800 uppercase tracking-wide">Members</p>
+                <p className="text-4xl font-serif font-bold text-amber-950 mt-2">{stats.totalBorrowers}</p>
               </div>
               <div className="text-5xl opacity-50">👥</div>
             </div>
@@ -124,7 +124,7 @@ function Home() {
                         {book.title}
                       </h3>
                       {book.available ? (
-                        <span className="inline-flex items-center px-3 py-1 text-xs font-serif font-semibold bg-green-100 text-green-900 border border-green-900">
+                        <span className="inline-flex items-center px-3 py-1 text-xs font-serif font-semibold bg-amber-100 text-amber-900 border border-amber-900">
                           In
                         </span>
                       ) : (

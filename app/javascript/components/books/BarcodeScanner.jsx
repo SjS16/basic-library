@@ -144,7 +144,7 @@ function BarcodeScanner({ onScan, onClose }) {
               )}
               <button
                 onClick={() => setShowManualInput(true)}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
+                className="px-4 py-2 bg-amber-800 text-amber-50 rounded-lg hover:bg-amber-900 text-sm"
               >
                 Enter ISBN Manually
               </button>
@@ -153,7 +153,7 @@ function BarcodeScanner({ onScan, onClose }) {
 
           {showManualInput ? (
             <form onSubmit={handleManualSubmit} className="mb-4">
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="bg-amber-50 border border-amber-300 rounded-lg p-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Enter ISBN Number
                 </label>
@@ -171,7 +171,7 @@ function BarcodeScanner({ onScan, onClose }) {
                 <button
                   type="submit"
                   disabled={!manualISBN.trim()}
-                  className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 transition-colors text-sm sm:text-base mb-2"
+                  className="w-full px-4 py-2 bg-amber-800 text-amber-50 rounded-lg hover:bg-amber-900 disabled:bg-gray-300 transition-colors text-sm sm:text-base mb-2"
                 >
                   Look Up Book
                 </button>
@@ -181,7 +181,7 @@ function BarcodeScanner({ onScan, onClose }) {
                     setShowManualInput(false);
                     startScanning();
                   }}
-                  className="w-full px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm"
+                  className="w-full px-4 py-2 bg-amber-100 text-amber-900 rounded-lg hover:bg-amber-200 transition-colors text-sm border border-amber-900"
                 >
                   📷 Try Camera Scanner Instead
                 </button>
@@ -227,7 +227,7 @@ function BarcodeScanner({ onScan, onClose }) {
                 <button
                   type="button"
                   onClick={() => setShowManualInput(true)}
-                  className="text-blue-600 hover:text-blue-800 text-sm underline"
+                  className="text-amber-800 hover:text-amber-900 text-sm underline"
                 >
                   Or enter ISBN manually
                 </button>

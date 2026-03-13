@@ -47,7 +47,7 @@ function ShowBook() {
             </div>
           )}
           <button
-            className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-blue-600 text-white rounded hover:bg-blue-700 shadow text-sm sm:text-base"
+            className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-amber-800 text-amber-50 rounded hover:bg-amber-900 shadow text-sm sm:text-base"
             onClick={() => navigate(`/books/${book.id}/edit`)}
           >
             Edit Book
@@ -59,11 +59,11 @@ function ShowBook() {
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 sm:gap-4 mb-4 sm:mb-6">
             <h1 className="text-2xl sm:text-3xl font-bold">{book.title}</h1>
             {book.available ? (
-              <span className="px-2 sm:px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs sm:text-sm font-semibold self-start">
+              <span className="px-2 sm:px-3 py-1 bg-amber-100 text-amber-900 rounded-full text-xs sm:text-sm font-semibold self-start border border-amber-900">
                 Available
               </span>
             ) : (
-              <span className="px-2 sm:px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs sm:text-sm font-semibold self-start">
+              <span className="px-2 sm:px-3 py-1 bg-red-100 text-red-900 rounded-full text-xs sm:text-sm font-semibold self-start border border-red-900">
                 Checked Out
               </span>
             )}

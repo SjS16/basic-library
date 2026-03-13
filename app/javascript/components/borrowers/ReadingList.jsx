@@ -114,7 +114,7 @@ function ReadingList({ borrowerId, readingStatuses = [], allBooks = [], onUpdate
         <button
           onClick={handleAddBook}
           disabled={!selectedBookId}
-          className="w-full px-3 sm:px-4 py-2 text-sm sm:text-base bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 transition-colors"
+          className="w-full px-3 sm:px-4 py-2 text-sm sm:text-base bg-amber-800 text-amber-50 rounded-lg hover:bg-amber-900 disabled:bg-gray-300 transition-colors"
         >
           Add to Reading List
         </button>

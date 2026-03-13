@@ -6,7 +6,7 @@ function BookActions({ book, onUpdate, onDelete, onNavigate }) {
       <div className="flex items-center gap-2">
         {book.available ? (
           <button
-            className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-green-700 bg-green-50 hover:bg-green-100 rounded-lg transition-colors"
+            className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-amber-900 bg-amber-100 hover:bg-amber-200 rounded-lg transition-colors border border-amber-900"
             onClick={() => onUpdate("available", false)}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

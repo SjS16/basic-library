@@ -98,8 +98,8 @@ function NavBar() {
                 to="/borrowers"
                 className={`block px-6 py-3 transition-all ${
                   isActive("/borrowers")
-                    ? "bg-white text-purple-600 font-semibold"
-                    : "hover:bg-blue-600"
+                    ? "bg-amber-100 text-amber-950 font-semibold"
+                    : "hover:bg-amber-700"
                 }`}
                 onClick={() => setMobileMenuOpen(false)}
               >

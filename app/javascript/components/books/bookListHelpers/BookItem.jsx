@@ -48,7 +48,7 @@ function BookItem({ book, handleEdit, handleDelete, navigate }) {
                   </span>
                 )}
                 {book.genre && (
-                  <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium">
+                  <span className="px-2 py-1 bg-amber-100 text-amber-900 rounded text-xs font-medium border border-amber-900">
                     {book.genre}
                   </span>
                 )}
@@ -68,13 +68,13 @@ function BookItem({ book, handleEdit, handleDelete, navigate }) {
             {/* Availability Badge */}
             <div className="sm:ml-4 self-start">
               {book.available ? (
-                <span className="inline-flex items-center px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-semibold bg-green-100 text-green-800">
-                  <span className="w-2 h-2 bg-green-500 rounded-full mr-1 sm:mr-2"></span>
+                <span className="inline-flex items-center px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-semibold bg-amber-100 text-amber-900 border border-amber-900">
+                  <span className="w-2 h-2 bg-amber-600 rounded-full mr-1 sm:mr-2"></span>
                   Available
                 </span>
               ) : (
-                <span className="inline-flex items-center px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-semibold bg-red-100 text-red-800">
-                  <span className="w-2 h-2 bg-red-500 rounded-full mr-1 sm:mr-2"></span>
+                <span className="inline-flex items-center px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-semibold bg-red-100 text-red-900 border border-red-900">
+                  <span className="w-2 h-2 bg-red-600 rounded-full mr-1 sm:mr-2"></span>
                   Checked Out
                 </span>
               )}

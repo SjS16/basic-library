@@ -100,7 +100,7 @@ function EditBook() {
       {!id && (
         <button
           onClick={() => setShowScanner(true)}
-          className="w-full mb-4 px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 shadow-lg transition-all flex items-center justify-center gap-2 text-sm sm:text-base font-medium"
+          className="w-full mb-4 px-4 py-3 bg-gradient-to-r from-amber-800 to-amber-900 text-amber-50 rounded-lg hover:from-amber-900 hover:to-amber-950 shadow-lg transition-all flex items-center justify-center gap-2 text-sm sm:text-base font-medium"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
@@ -135,7 +135,7 @@ function EditBook() {
           Cancel
         </button>
         <button
-          className="w-full sm:w-auto px-4 py-2 text-sm sm:text-base bg-blue-600 text-white rounded hover:bg-blue-700"
+          className="w-full sm:w-auto px-4 py-2 text-sm sm:text-base bg-amber-800 text-amber-50 rounded hover:bg-amber-900"
           onClick={saveBook}
         >
           Save Changes

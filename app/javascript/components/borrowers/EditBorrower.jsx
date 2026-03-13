@@ -89,7 +89,7 @@ function EditBorrower() {
             </div>
           )}
 
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4">
+          <div className="bg-amber-50 border border-amber-300 rounded-lg p-3 sm:p-4">
             <h3 className="text-sm sm:text-base font-semibold text-blue-900 mb-2">Borrower Guidelines</h3>
             <ul className="text-xs sm:text-sm text-blue-800 space-y-1">
               <li>• Maximum 5 books at a time</li>
@@ -108,7 +108,7 @@ function EditBorrower() {
             Cancel
           </button>
           <button
-            className="w-full sm:w-auto px-4 sm:px-6 py-2 text-sm sm:text-base bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+            className="w-full sm:w-auto px-4 sm:px-6 py-2 text-sm sm:text-base bg-amber-800 text-amber-50 rounded-lg hover:bg-amber-900 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
             onClick={saveBorrower}
             disabled={!borrower.name}
           >
