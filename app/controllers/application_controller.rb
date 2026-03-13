@@ -6,7 +6,7 @@ class ApplicationController < ActionController::Base
   stale_when_importmap_changes
 
   http_basic_authenticate_with(
-    name: ENV['APP_USER'] || 'admin',
-    password: ENV['APP_PASS'] || 'secret'
-  )
+    name: ENV["APP_USER"] || "admin",
+    password: ENV["APP_PASS"] || "secret"
+  ) unless Rails.env.test?
 end

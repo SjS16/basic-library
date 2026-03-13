@@ -11,9 +11,9 @@ function NavBar() {
   return (
     <nav className="bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg fixed w-full top-0 z-50">
       <div className="max-w-7xl mx-auto flex justify-between items-center px-4 sm:px-6 py-3 sm:py-4">
-        <Link to="/books" className="text-xl sm:text-2xl font-bold hover:text-gray-200 transition-colors">
-          📚 Library
-        </Link>
+        <a href="/" className="text-xl sm:text-2xl font-bold hover:text-gray-200 transition-colors">
+          📚 My Library
+        </a>
         
         {/* Mobile Menu Button */}
         <button
@@ -32,6 +32,14 @@ function NavBar() {
 
         {/* Desktop Menu */}
         <ul className="hidden md:flex space-x-1">
+          <li>
+            <a
+              href="/"
+              className="px-4 py-2 rounded-lg transition-all hover:bg-blue-500"
+            >
+              Home
+            </a>
+          </li>
           <li>
             <Link
               to="/books"
@@ -63,6 +71,15 @@ function NavBar() {
       {mobileMenuOpen && (
         <div className="md:hidden bg-blue-700 border-t border-blue-500">
           <ul className="flex flex-col">
+            <li>
+              <a
+                href="/"
+                className="block px-6 py-3 transition-all hover:bg-blue-600"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                🏠 Home
+              </a>
+            </li>
             <li>
               <Link
                 to="/books"
