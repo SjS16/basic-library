@@ -4,8 +4,9 @@ import { useCurrentUser } from "../hooks/useCurrentUser";
 import { getAuthHeaders } from "../utils/csrf";
 
 // In-app notifications, shown at the top of every page until
-// dismissed: a wished-for book arriving for members, a new member
-// joining for the owner. Dismissing deletes the notification.
+// dismissed: a wished-for book arriving and borrow-request
+// outcomes for members, new members and borrow requests for the
+// owner. Dismissing deletes the notification.
 function NotificationsBanner() {
   const currentUser = useCurrentUser();
   const [notifications, setNotifications] = useState([]);
@@ -52,6 +53,46 @@ function NotificationsBanner() {
                   {n.borrower.name}
                 </Link>{" "}
                 just joined your library.
+              </>
+            ) : n.kind === "borrow_request_received" && n.borrower && n.book ? (
+              <>
+                📩{" "}
+                <Link to={`/borrowers/${n.borrower.id}`} className="font-semibold underline hover:no-underline">
+                  {n.borrower.name}
+                </Link>{" "}
+                requested to borrow{" "}
+                <Link to={`/books/${n.book.id}`} className="font-semibold underline hover:no-underline">
+                  {n.book.title}
+                </Link>
+                .
+              </>
+            ) : n.kind === "borrow_request_approved" && n.book ? (
+              <>
+                ✅ Your request for{" "}
+                <Link to={`/books/${n.book.id}`} className="font-semibold underline hover:no-underline">
+                  {n.book.title}
+                </Link>{" "}
+                was approved. It's checked out to you now.
+              </>
+            ) : n.kind === "borrow_request_declined" && n.book ? (
+              <>
+                Your request for{" "}
+                <Link to={`/books/${n.book.id}`} className="font-semibold underline hover:no-underline">
+                  {n.book.title}
+                </Link>{" "}
+                wasn't approved this time.
+              </>
+            ) : n.kind === "book_recommended" && n.borrower && n.book ? (
+              <>
+                💌{" "}
+                <Link to={`/borrowers/${n.borrower.id}`} className="font-semibold underline hover:no-underline">
+                  {n.borrower.name}
+                </Link>{" "}
+                recommended{" "}
+                <Link to={`/books/${n.book.id}`} className="font-semibold underline hover:no-underline">
+                  {n.book.title}
+                </Link>{" "}
+                to you.
               </>
             ) : (
               "You have a new notification."

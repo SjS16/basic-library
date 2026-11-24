@@ -24,6 +24,21 @@ class ReadingStatus < ApplicationRecord
   scope :currently_reading, -> { where(status: :currently_reading) }
   scope :read, -> { where(status: :read) }
 
+  # Provenance: if this entry is on the list because someone
+  # recommended the book and the member accepted, name them, and
+  # keep their note attached to the entry.
+  def accepted_recommendation
+    Recommendation.where(recipient: borrower, book: book, status: :accepted).order(created_at: :desc).first
+  end
+
+  def recommended_by_name
+    accepted_recommendation&.recommender&.name
+  end
+
+  def recommendation_note
+    accepted_recommendation&.note
+  end
+
   # Helper to get status badge info
   def status_color
     case status.to_sym

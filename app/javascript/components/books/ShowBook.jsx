@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
 import { getAuthHeaders } from "../../utils/csrf";
+import RecommendBookForm from "../recommendations/RecommendBookForm";
 
 function ShowBook() {
   const [book, setBook] = useState({});
@@ -474,6 +475,19 @@ function ShowBook() {
 
                   {checkoutError && <p className="text-sm text-red-700 mt-2">{checkoutError}</p>}
               </div>
+            </div>
+          )}
+
+          {/* Recommend panel: any member can press this book on
+              another member. It lands in their recommendations;
+              accepting puts it on their to-be-read list. */}
+          {book.id && currentUser && myBorrowerId && (
+            <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t">
+              <h2 className="text-lg font-bold mb-1">Recommend this book</h2>
+              <p className="text-xs sm:text-sm text-gray-500 mb-3">
+                Send it to another member. If they accept, it joins their to-be-read list.
+              </p>
+              <RecommendBookForm fixedBook={book} />
             </div>
           )}
 

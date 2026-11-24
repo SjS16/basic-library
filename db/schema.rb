@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_25_000012) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_25_000013) do
   create_table "books", force: :cascade do |t|
     t.string "author"
     t.boolean "available"
@@ -114,6 +114,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_25_000012) do
     t.index ["borrower_id"], name: "index_reading_statuses_on_borrower_id"
   end
 
+  create_table "recommendations", force: :cascade do |t|
+    t.integer "book_id", null: false
+    t.datetime "created_at", null: false
+    t.text "note"
+    t.integer "recipient_id", null: false
+    t.integer "recommender_id", null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["book_id"], name: "index_recommendations_on_book_id"
+    t.index ["recipient_id", "status"], name: "index_recommendations_on_recipient_id_and_status"
+    t.index ["recipient_id"], name: "index_recommendations_on_recipient_id"
+    t.index ["recommender_id"], name: "index_recommendations_on_recommender_id"
+  end
+
   create_table "sessions", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "ip_address"
@@ -157,6 +171,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_25_000012) do
   add_foreign_key "notifications", "users"
   add_foreign_key "reading_statuses", "books"
   add_foreign_key "reading_statuses", "borrowers"
+  add_foreign_key "recommendations", "books"
+  add_foreign_key "recommendations", "borrowers", column: "recipient_id"
+  add_foreign_key "recommendations", "borrowers", column: "recommender_id"
   add_foreign_key "sessions", "users"
   add_foreign_key "users", "borrowers"
 end

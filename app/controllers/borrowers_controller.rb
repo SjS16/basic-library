@@ -23,7 +23,8 @@ class BorrowersController < ApplicationController
               include: :book
             },
             reading_statuses: {
-              include: :book
+              include: :book,
+              methods: [ :recommended_by_name, :recommendation_note ]
             }
           },
           methods: [ :standing_status, :standing_color ]

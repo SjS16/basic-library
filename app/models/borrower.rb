@@ -3,6 +3,8 @@ class Borrower < ApplicationRecord
   has_many :books, through: :loans
   has_many :reading_statuses, dependent: :destroy
   has_many :borrow_requests, dependent: :destroy
+  has_many :recommendations_sent, class_name: "Recommendation", foreign_key: :recommender_id, dependent: :destroy
+  has_many :recommendations_received, class_name: "Recommendation", foreign_key: :recipient_id, dependent: :destroy
   has_many :books_to_read, -> { where(reading_statuses: { status: 0 }) }, through: :reading_statuses, source: :book
   has_many :books_reading, -> { where(reading_statuses: { status: 1 }) }, through: :reading_statuses, source: :book
   has_many :books_read, -> { where(reading_statuses: { status: 2 }) }, through: :reading_statuses, source: :book

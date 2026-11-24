@@ -57,4 +57,38 @@ class NotificationsTest < ActionDispatch::IntegrationTest
     end
     assert_response :no_content
   end
+
+  test "a borrow request notifies the owner" do
+    book = Book.create!(title: "Wanted Out", author: "Some Author", in_library: true, available: true)
+
+    sign_in_as(@member)
+    assert_difference -> { Notification.where(user: @owner, kind: "borrow_request_received").count }, 1 do
+      post borrow_requests_path(format: :json),
+           params: { borrow_request: { book_id: book.id } }, as: :json
+    end
+    assert_response :created
+    assert_equal book, Notification.where(user: @owner, kind: "borrow_request_received").last.book
+  end
+
+  test "approving a borrow request notifies the member who asked" do
+    book = Book.create!(title: "Approvable", author: "Some Author", in_library: true, available: true)
+    request = BorrowRequest.create!(borrower: borrowers(:good_borrower), book: book)
+
+    sign_in_as(@owner)
+    assert_difference -> { Notification.where(user: @member, kind: "borrow_request_approved").count }, 1 do
+      post approve_borrow_request_path(request, format: :json), as: :json
+    end
+    assert_response :success
+  end
+
+  test "declining a borrow request notifies the member who asked" do
+    book = Book.create!(title: "Declinable", author: "Some Author", in_library: true, available: true)
+    request = BorrowRequest.create!(borrower: borrowers(:good_borrower), book: book)
+
+    sign_in_as(@owner)
+    assert_difference -> { Notification.where(user: @member, kind: "borrow_request_declined").count }, 1 do
+      post decline_borrow_request_path(request, format: :json), as: :json
+    end
+    assert_response :success
+  end
 end

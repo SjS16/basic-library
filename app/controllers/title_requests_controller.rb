@@ -43,6 +43,7 @@ class TitleRequestsController < ApplicationController
     request = borrower.borrow_requests.build(book: book)
     if request.save
       deliver_safely LibraryMailer.borrow_request_received(request)
+      Notification.borrow_request_received!(request)
       render json: { outcome: "requested", book: book_json(book) }, status: :created
     else
       render json: { error: request.errors.full_messages.to_sentence }, status: :unprocessable_entity

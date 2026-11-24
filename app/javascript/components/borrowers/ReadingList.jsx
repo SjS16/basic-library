@@ -397,6 +397,14 @@ function ReadingList({ borrowerId, borrowerName, readingStatuses = [], allBooks 
                           )}
                         </h4>
                         <p className="text-xs sm:text-sm text-gray-600 truncate">{rs.book.author}</p>
+                        {rs.recommended_by_name && (
+                          <p className="text-xs sm:text-sm text-amber-800 mt-0.5">
+                            💌 Recommended by {rs.recommended_by_name}
+                            {rs.recommendation_note && (
+                              <span className="text-gray-600 italic"> — “{rs.recommendation_note}”</span>
+                            )}
+                          </p>
+                        )}
                       </div>
                       {statusOpt.value === "want_to_read" && libraryChip(rs.book)}
                     </div>

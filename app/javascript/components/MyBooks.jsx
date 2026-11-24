@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { useCurrentUser } from "../hooks/useCurrentUser";
 import ReadingList from "./borrowers/ReadingList";
+import RecommendedInbox from "./recommendations/RecommendedInbox";
+import RecommendBookForm from "./recommendations/RecommendBookForm";
 
 // A member's personal page: what they have checked out, then their
 // reading lists. Shelves in the order a member thinks about them.
@@ -108,6 +110,9 @@ function MyBooks() {
         )}
       </div>
 
+      {/* Recommendations waiting on a decision. */}
+      <RecommendedInbox onAccepted={fetchData} />
+
       {/* The reading lists: want to read, currently reading, read. */}
       <ReadingList
         borrowerId={borrowerId}
@@ -119,6 +124,16 @@ function MyBooks() {
         onLend={null}
         viewerIsSelf={true}
       />
+
+      {/* Recommend a book to another member. */}
+      <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 mt-4 sm:mt-6">
+        <h2 className="text-xl sm:text-2xl font-bold mb-1 sm:mb-2">Recommend a Book</h2>
+        <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
+          Think someone here would love a book? It can be any book Open Library knows, not
+          just one on these shelves. They decide whether it joins their list.
+        </p>
+        <RecommendBookForm />
+      </div>
     </div>
   );
 }

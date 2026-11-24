@@ -10,6 +10,31 @@ import Pagination from "../Pagination";
 
 const BOOKS_PER_PAGE = 20;
 
+const LIST_STATE_KEY = "booksListState";
+
+function loadListState() {
+  try {
+    return JSON.parse(sessionStorage.getItem(LIST_STATE_KEY)) || {};
+  } catch {
+    return {};
+  }
+}
+
+function sortBooks(list, sortBy) {
+  return [...list].sort((a, b) => {
+    if (sortBy === "author") {
+      return (a.author || "").localeCompare(b.author || "");
+    } else if (sortBy === "published_year") {
+      return (b.published_year || 0) - (a.published_year || 0);
+    } else if (sortBy === "rating") {
+      return (b.rating || 0) - (a.rating || 0);
+    } else if (sortBy === "recently_added") {
+      return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+    }
+    return (a.title || "").localeCompare(b.title || "");
+  });
+}
+
 function BooksList() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -17,25 +42,54 @@ function BooksList() {
   const isOwner = !!currentUser?.owner;
   const [allBooks, setAllBooks] = useState([]);
   const [filteredBooks, setFilteredBooks] = useState([]);
-  const [page, setPage] = useState(1);
+  // The list view (search, filter, sort, page) is remembered in
+  // sessionStorage, so popping into a book and coming back lands
+  // you where you left off instead of resetting the list.
+  const [savedView] = useState(loadListState);
+  const [searchQuery, setSearchQuery] = useState(savedView.searchQuery || "");
+  const [statusFilter, setStatusFilter] = useState(savedView.statusFilter || "all");
+  const [sortBy, setSortBy] = useState(savedView.sortBy || "title");
+  const [page, setPage] = useState(savedView.page || 1);
   const [manageOpen, setManageOpen] = useState(false);
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(LIST_STATE_KEY, JSON.stringify({ searchQuery, statusFilter, sortBy, page }));
+    } catch {
+      // Storage unavailable (private mode etc.) — the list just
+      // won't remember, which is the old behaviour anyway.
+    }
+  }, [searchQuery, statusFilter, sortBy, page]);
 
   useEffect(() => {
     fetch("/books.json")
       .then((res) => res.json())
       .then((data) => {
-        // The sort control starts on Title (A-Z), so the list has
-        // to arrive in that order too. Otherwise the control is
-        // lying, and picking Title again changes nothing because
-        // the select's value never actually changed.
-        const sorted = [...data].sort((a, b) => (a.title || "").localeCompare(b.title || ""));
+        // Reapply the remembered view, so returning to the list
+        // shows the same search, filter, and sort the reader left.
+        const sorted = sortBooks(data, sortBy);
+        let view = sorted;
+        if (statusFilter === "available") {
+          view = view.filter((book) => book.available === true);
+        } else if (statusFilter === "unavailable") {
+          view = view.filter((book) => book.available === false);
+        }
+        if (searchQuery && searchQuery.length >= 2) {
+          const lowerQuery = searchQuery.toLowerCase();
+          view = view.filter((book) =>
+            book.title?.toLowerCase().includes(lowerQuery) ||
+            book.author?.toLowerCase().includes(lowerQuery) ||
+            book.genre?.toLowerCase().includes(lowerQuery)
+          );
+        }
         setAllBooks(sorted);
-        setFilteredBooks(sorted);
+        setFilteredBooks(view);
       })
       .catch((err) => console.error("Error fetching books:", err));
   }, [location.key]);
 
   const handleSearch = (query) => {
+    setSearchQuery(query);
     setPage(1);
     if (!query || query.length < 2) {
       setFilteredBooks(allBooks);
@@ -51,6 +105,7 @@ function BooksList() {
   };
 
   const handleFilter = (status) => {
+    setStatusFilter(status);
     setPage(1);
     if (status === "all") {
       setFilteredBooks(allBooks);
@@ -69,29 +124,10 @@ function BooksList() {
     }
   };
 
-  const handleSort = (sortBy) => {
+  const handleSort = (newSortBy) => {
+    setSortBy(newSortBy);
     setPage(1);
-    const sorted = [...filteredBooks].sort((a, b) => {
-      if (sortBy === "title") {
-        const titleA = a.title || "";
-        const titleB = b.title || "";
-        return titleA.localeCompare(titleB);
-      } else if (sortBy === "author") {
-        const authorA = a.author || "";
-        const authorB = b.author || "";
-        return authorA.localeCompare(authorB);
-      } else if (sortBy === "published_year") {
-        return (b.published_year || 0) - (a.published_year || 0);
-      } else if (sortBy === "rating") {
-        return (b.rating || 0) - (a.rating || 0);
-      } else if (sortBy === "recently_added") {
-        const dateA = new Date(a.created_at || 0);
-        const dateB = new Date(b.created_at || 0);
-        return dateB - dateA; // Newest first
-      }
-      return 0;
-    });
-    setFilteredBooks(sorted);
+    setFilteredBooks(sortBooks(filteredBooks, newSortBy));
   };
 
   const handleSurprise = () => {
@@ -228,15 +264,15 @@ function BooksList() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             <div>
               <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Search</label>
-              <Search onSearch={handleSearch} />
+              <Search onSearch={handleSearch} value={searchQuery} />
             </div>
             <div>
               <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Filter</label>
-              <BookFilter onFilter={handleFilter} />
+              <BookFilter onFilter={handleFilter} value={statusFilter} />
             </div>
             <div>
               <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Sort</label>
-              <BookSort onSort={handleSort} />
+              <BookSort onSort={handleSort} value={sortBy} />
             </div>
           </div>
           <div className="mt-4 flex justify-end">

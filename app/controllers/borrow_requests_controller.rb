@@ -32,6 +32,7 @@ class BorrowRequestsController < ApplicationController
 
     if @borrow_request.save
       deliver_safely LibraryMailer.borrow_request_received(@borrow_request)
+      Notification.borrow_request_received!(@borrow_request)
       render json: request_json(@borrow_request), status: :created
     else
       render json: { error: @borrow_request.errors.full_messages.to_sentence }, status: :unprocessable_entity
@@ -53,6 +54,7 @@ class BorrowRequestsController < ApplicationController
 
     if loan.save
       @borrow_request.update!(status: :approved)
+      Notification.borrow_request_decided!(@borrow_request)
       render json: request_json(@borrow_request)
     else
       render json: { error: loan.errors.full_messages.to_sentence }, status: :unprocessable_entity
@@ -66,6 +68,7 @@ class BorrowRequestsController < ApplicationController
     end
 
     @borrow_request.update!(status: :declined)
+    Notification.borrow_request_decided!(@borrow_request)
     render json: request_json(@borrow_request)
   end
 

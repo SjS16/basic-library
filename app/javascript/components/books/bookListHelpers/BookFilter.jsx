@@ -1,18 +1,10 @@
-import React, { useState } from "react";
+import React from "react";
 
-function BookFilter({ onFilter }) {
-  const [status, setStatus] = useState("all");
-
-  const handleChange = (e) => {
-    const newStatus = e.target.value;
-    setStatus(newStatus);
-    onFilter(newStatus);
-  };
-
+function BookFilter({ onFilter, value }) {
   return (
     <select
-      value={status}
-      onChange={handleChange}
+      value={value}
+      onChange={(e) => onFilter(e.target.value)}
       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
     >
       <option value="all">All Books</option>
