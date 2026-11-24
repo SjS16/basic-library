@@ -35,12 +35,15 @@ class Book < ApplicationRecord
   # matter the casing of either. The built-in uniqueness validator
   # only lowercases the attribute itself, not its scope, so the
   # same author typed in a different case slipped through.
+  # An edition note makes a copy distinct: two copies of the same
+  # book are allowed when their editions differ (including one
+  # with a note and one without).
   def no_duplicate_title_and_author
     return if title.blank?
 
-    duplicate = Book.where("LOWER(title) = ? AND LOWER(COALESCE(author, '')) = ?",
-                           title.strip.downcase, author.to_s.strip.downcase)
+    duplicate = Book.where("LOWER(title) = ? AND LOWER(COALESCE(author, '')) = ? AND LOWER(COALESCE(edition, '')) = ?",
+                           title.strip.downcase, author.to_s.strip.downcase, edition.to_s.strip.downcase)
     duplicate = duplicate.where.not(id: id) if persisted?
-    errors.add(:title, "is already in the library for this author") if duplicate.exists?
+    errors.add(:title, "is already in the library for this author and edition — add an edition note to keep another copy") if duplicate.exists?
   end
 end

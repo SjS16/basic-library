@@ -36,7 +36,7 @@ function BookItem({ book, isOwner, handleEdit, handleDelete, navigate }) {
               >
                 {book.title}
               </Link>
-              <p className="text-gray-600 text-xs sm:text-sm mb-2">by {book.author}</p>
+              <p className="text-gray-600 text-xs sm:text-sm mb-2">by {book.author}{book.edition ? ` · ${book.edition}` : ""}</p>
               
               <div className="flex items-center flex-wrap gap-2 sm:gap-3 text-xs sm:text-sm text-gray-500 mb-3">
                 {book.published_year && (

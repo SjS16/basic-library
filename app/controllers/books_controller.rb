@@ -17,9 +17,9 @@ class BooksController < ApplicationController
   def export
     require "csv"
     csv = CSV.generate do |rows|
-      rows << [ "Title", "Author", "Genre", "Published Year", "ISBN", "Rating", "Available", "In Library", "Added" ]
+      rows << [ "Title", "Author", "Edition", "Genre", "Published Year", "ISBN", "Rating", "Available", "In Library", "Added" ]
       Book.order(:author, :title).find_each do |book|
-        rows << [ book.title, book.author, book.genre, book.published_year, book.isbn, book.rating,
+        rows << [ book.title, book.author, book.edition, book.genre, book.published_year, book.isbn, book.rating,
                   book.available ? "Yes" : "No", book.in_library ? "Yes" : "No", book.created_at.to_date ]
       end
     end
@@ -127,6 +127,6 @@ class BooksController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def book_params
-      params.require(:book).permit(:title, :author, :description, :published_year, :available, :genre, :rating, :cover_url, :isbn)
+      params.require(:book).permit(:title, :author, :description, :published_year, :available, :genre, :rating, :cover_url, :isbn, :edition)
     end
 end

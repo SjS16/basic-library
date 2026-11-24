@@ -16,6 +16,16 @@ function BookForm({ book, onChange }) {
         />
       </FormField>
 
+      <FormField label="Edition (optional):">
+        <input
+          type="text"
+          value={book.edition || ""}
+          onChange={(e) => handleChange("edition", e.target.value)}
+          placeholder="e.g. Penguin Classics, 2024 edition"
+          className="w-full p-2 text-sm sm:text-base border rounded mb-3 sm:mb-4"
+        />
+      </FormField>
+
       <FormField label="Published Year:">
         <input
           type="text"

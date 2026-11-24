@@ -12,6 +12,17 @@ class BookTest < ActiveSupport::TestCase
     assert book.valid?
   end
 
+  test "a second copy is fine when its edition note differs" do
+    book = Book.new(title: "The Great Gatsby", author: "F. Scott Fitzgerald", edition: "Scribner Classics")
+    assert book.valid?
+  end
+
+  test "a second copy with the same edition note is still a duplicate" do
+    Book.create!(title: "Wuthering Heights", author: "Emily Brontë", edition: "Penguin Classics", available: true)
+    book = Book.new(title: "wuthering heights", author: "EMILY BRONTË", edition: "penguin classics")
+    assert_not book.valid?
+  end
+
   test "in_library scope excludes members' wishlist records" do
     wishlist = Book.create!(title: "Wishlisted", author: "Hopeful", in_library: false, available: false)
     assert_includes Book.in_library, books(:available_book)
