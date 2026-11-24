@@ -24,8 +24,13 @@ function BooksList() {
     fetch("/books.json")
       .then((res) => res.json())
       .then((data) => {
-        setAllBooks(data);
-        setFilteredBooks(data);
+        // The sort control starts on Title (A-Z), so the list has
+        // to arrive in that order too. Otherwise the control is
+        // lying, and picking Title again changes nothing because
+        // the select's value never actually changed.
+        const sorted = [...data].sort((a, b) => (a.title || "").localeCompare(b.title || ""));
+        setAllBooks(sorted);
+        setFilteredBooks(sorted);
       })
       .catch((err) => console.error("Error fetching books:", err));
   }, [location.key]);
