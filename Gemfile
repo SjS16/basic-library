@@ -68,3 +68,8 @@ end
 gem "jsbundling-rails", "~> 1.3"
 
 gem "tailwindcss-rails", "~> 4.4"
+
+group :production do
+  # Production runs on Postgres (Neon); SQLite stays for development and test.
+  gem "pg", "~> 1.5"
+end
