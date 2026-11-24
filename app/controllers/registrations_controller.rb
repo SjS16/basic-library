@@ -5,7 +5,7 @@ class RegistrationsController < ApplicationController
   def new
     # A signed-in account following an invite link joins on the spot.
     if current_user && InviteLink.valid_token?(params[:invite])
-      current_user.activate_membership!
+      current_user.activate_membership!(notify_owner: true)
       redirect_to root_path, notice: "You have been added to the library. Welcome!"
       return
     end
@@ -19,7 +19,7 @@ class RegistrationsController < ApplicationController
     if @user.save
       # Signing up through the owner's invite link grants membership
       # immediately; without it, membership is granted separately.
-      @user.activate_membership! if InviteLink.valid_token?(params[:invite_token])
+      @user.activate_membership!(notify_owner: true) if InviteLink.valid_token?(params[:invite_token])
       start_new_session_for(@user)
       redirect_to root_path, notice: "Welcome! Your account is ready."
     else

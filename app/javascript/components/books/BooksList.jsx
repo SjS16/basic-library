@@ -88,6 +88,13 @@ function BooksList() {
     setFilteredBooks(sorted);
   };
 
+  const handleSurprise = () => {
+    const pool = allBooks.filter((b) => b.available);
+    if (pool.length === 0) return;
+    const pick = pool[Math.floor(Math.random() * pool.length)];
+    navigate(`/books/${pick.id}`);
+  };
+
   const handleEdit = (attribute, value, book) => {
     const updatedBook = { ...book, [attribute]: value };
 
@@ -206,6 +213,15 @@ function BooksList() {
               <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Sort</label>
               <BookSort onSort={handleSort} />
             </div>
+          </div>
+          <div className="mt-4 flex justify-end">
+            <button
+              onClick={handleSurprise}
+              disabled={!allBooks.some((b) => b.available)}
+              className="px-4 py-2 bg-white border-2 border-amber-900 text-amber-900 rounded-lg hover:bg-amber-100 shadow transition-all duration-200 text-sm font-medium disabled:opacity-50"
+            >
+              🎲 Surprise me — a random available book
+            </button>
           </div>
         </div>
       </div>

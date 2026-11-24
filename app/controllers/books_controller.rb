@@ -35,11 +35,18 @@ class BooksController < ApplicationController
         # Include who currently has the book, so its page can link
         # to that member.
         loan = @book.current_loan
+        ratings = @book.reading_statuses.read.where.not(rating: nil)
         render json: @book.as_json.merge(
           "current_loan" => loan&.as_json(
             only: [ :id, :due_date, :checked_out_at ],
             include: { borrower: { only: [ :id, :name ] } }
-          )
+          ),
+          # What members who finished it thought of it, so readers
+          # can choose their next book by it.
+          "member_rating" => {
+            "average" => ratings.average(:rating)&.to_f&.round(1),
+            "count" => ratings.count
+          }
         )
       }
     end

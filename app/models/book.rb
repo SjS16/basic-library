@@ -4,6 +4,10 @@ class Book < ApplicationRecord
   has_many :reading_statuses, dependent: :destroy
   has_many :borrow_requests, dependent: :destroy
 
+  # When a wished-for book joins the library, the members who have
+  # it on their to-be-read list get an in-app notification.
+  after_save :notify_readers_of_arrival, if: -> { in_library? && saved_change_to_in_library? }
+
   # Books the library actually owns. Books members add to their own
   # to-be-read lists exist as records too, flagged in_library: false.
   scope :in_library, -> { where(in_library: true) }
@@ -30,6 +34,15 @@ class Book < ApplicationRecord
   end
 
   private
+
+  def notify_readers_of_arrival
+    reading_statuses.want_to_read.find_each do |status|
+      user = User.find_by(borrower_id: status.borrower_id)
+      next unless user
+
+      Notification.find_or_create_by(user: user, kind: "wishlist_book_arrived", book: self)
+    end
+  end
 
   # The same title by the same author counts as a duplicate no
   # matter the casing of either. The built-in uniqueness validator

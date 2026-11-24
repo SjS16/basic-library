@@ -15,6 +15,7 @@ function ReadingList({ borrowerId, borrowerName, readingStatuses = [], allBooks 
   const [addNotice, setAddNotice] = useState(null);
   const [addSaving, setAddSaving] = useState(false);
   const [editingNoteId, setEditingNoteId] = useState(null);
+  const [justFinishedId, setJustFinishedId] = useState(null);
   const [noteDraft, setNoteDraft] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const { searchResults, clearResults } = useOpenLibrarySearch(searchTerm);
@@ -128,6 +129,13 @@ function ReadingList({ borrowerId, borrowerName, readingStatuses = [], allBooks 
       setListError("Something went wrong. Please try again.");
     }
     onUpdate();
+  };
+
+  // The finish line: one tap moves a book to Read, and its row
+  // then asks for a star rating while the finish is fresh.
+  const handleFinish = async (rs) => {
+    await handleUpdateStatus(rs.id, "read");
+    setJustFinishedId(rs.id);
   };
 
   const handleUpdateRating = async (readingStatusId, rating) => {
@@ -394,6 +402,14 @@ function ReadingList({ borrowerId, borrowerName, readingStatuses = [], allBooks 
                     </div>
                     <div className="flex items-center gap-2 flex-wrap">
                       {statusOpt.value === "read" && renderStars(rs)}
+                      {statusOpt.value === "currently_reading" && viewerIsSelf && (
+                        <button
+                          onClick={() => handleFinish(rs)}
+                          className="px-3 py-1 text-xs sm:text-sm bg-green-700 text-white rounded hover:bg-green-800 transition-colors"
+                        >
+                          Finished it ✓
+                        </button>
+                      )}
                       {viewerIsSelf && (
                         <select
                           value={rs.status}
@@ -424,6 +440,26 @@ function ReadingList({ borrowerId, borrowerName, readingStatuses = [], allBooks 
                         </button>
                       )}
                     </div>
+                    {justFinishedId === rs.id && rs.status === "read" && viewerIsSelf && (
+                      <div className="flex items-center gap-2 flex-wrap p-2 bg-green-50 border border-green-200 rounded">
+                        <span className="text-xs sm:text-sm text-green-800 font-medium">Finished! How was it?</span>
+                        <div className="flex items-center gap-0.5">
+                          {[1, 2, 3, 4, 5].map((n) => (
+                            <button
+                              key={n}
+                              onClick={() => { handleUpdateRating(rs.id, n); setJustFinishedId(null); }}
+                              className="text-lg leading-none text-amber-500 hover:scale-125 transition-transform"
+                              aria-label={`Rate ${n} of 5`}
+                            >
+                              ☆
+                            </button>
+                          ))}
+                        </div>
+                        <button onClick={() => setJustFinishedId(null)} className="text-xs text-gray-500 hover:underline">
+                          Skip
+                        </button>
+                      </div>
+                    )}
                     {(viewerIsSelf || rs.notes) && rs.status !== "want_to_read" && (
                       <div className="border-t border-gray-100 pt-2">
                         {editingNoteId === rs.id ? (

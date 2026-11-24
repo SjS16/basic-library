@@ -22,7 +22,7 @@ class InviteLinksController < ApplicationController
       return render json: { error: "That invite link is no longer valid. Ask the owner for a fresh one." }, status: :unprocessable_entity
     end
 
-    current_user.activate_membership!
+    current_user.activate_membership!(notify_owner: true)
     render json: { borrower_id: current_user.borrower_id }
   end
 end

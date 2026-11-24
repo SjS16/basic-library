@@ -9,6 +9,7 @@ function ShowBorrower() {
   const [currentLoans, setCurrentLoans] = useState([]);
   const [readingStatuses, setReadingStatuses] = useState([]);
   const [allBooks, setAllBooks] = useState([]);
+  const [borrowRequests, setBorrowRequests] = useState([]);
   const [dueEdits, setDueEdits] = useState({});
   const [nudgedIds, setNudgedIds] = useState([]);
   const [loanMsg, setLoanMsg] = useState({});
@@ -31,6 +32,18 @@ function ShowBorrower() {
         .catch((err) => console.error("Error fetching borrower:", err));
     }
   };
+
+  // The owner's queue endpoint returns every request; this page
+  // shows just this member's slice of it.
+  useEffect(() => {
+    if (!isOwner) return;
+    fetch("/borrow_requests.json")
+      .then((res) => (res.ok ? res.json() : { borrow_requests: [] }))
+      .then((data) =>
+        setBorrowRequests((data.borrow_requests || []).filter((r) => r.borrower?.id === Number(id)))
+      )
+      .catch(() => {});
+  }, [isOwner, id]);
 
   useEffect(() => {
     fetchBorrowerData();
@@ -127,6 +140,26 @@ function ShowBorrower() {
 
   const color = getStandingColor();
   const classes = colorClasses[color];
+
+  // Books on this member's want-to-read list that the library owns
+  // but are out with someone right now: their informal waitlist.
+  const waitingOn = readingStatuses.filter(
+    (rs) => rs.status === "want_to_read" && rs.book?.in_library && !rs.book?.available
+  );
+
+  const requestStatusChip = (status) => {
+    const styles = {
+      pending: "bg-amber-100 text-amber-800",
+      approved: "bg-green-100 text-green-800",
+      declined: "bg-red-100 text-red-800",
+      cancelled: "bg-gray-100 text-gray-600",
+    };
+    return (
+      <span className={`px-2 py-1 rounded text-xs font-semibold flex-shrink-0 capitalize ${styles[status] || styles.cancelled}`}>
+        {status}
+      </span>
+    );
+  };
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6">
@@ -259,6 +292,73 @@ function ShowBorrower() {
             </div>
           )}
         </div>
+
+        {isOwner && (
+          <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6">
+            <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">
+              Borrow Requests ({borrowRequests.length})
+            </h2>
+            {borrowRequests.length === 0 ? (
+              <p className="text-sm sm:text-base text-gray-500 text-center py-6 sm:py-8">No requests yet</p>
+            ) : (
+              <div className="space-y-2">
+                {borrowRequests.map((request) => (
+                  <div key={request.id} className="flex items-center justify-between gap-2 p-3 border border-gray-200 rounded-lg">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm sm:text-base font-medium truncate">
+                        {request.book ? (
+                          <Link to={`/books/${request.book.id}`} className="hover:text-amber-800 hover:underline">
+                            {request.book.title}
+                          </Link>
+                        ) : (
+                          "A book"
+                        )}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        Asked {new Date(request.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                    {requestStatusChip(request.status)}
+                  </div>
+                ))}
+                {borrowRequests.some((r) => r.status === "pending") && (
+                  <p className="text-sm pt-1">
+                    <Link to="/requests" className="text-amber-800 underline hover:text-amber-900">
+                      Review pending requests →
+                    </Link>
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {waitingOn.length > 0 && (
+          <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6">
+            <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">Waiting On</h2>
+            <p className="text-xs sm:text-sm text-gray-600 mb-3">
+              On their want-to-read list, in the library, and currently checked out.
+              When a copy comes back, the Lend button on their list below is the quick way to get it to them.
+            </p>
+            <div className="space-y-2">
+              {waitingOn.map((rs) => (
+                <div key={rs.id} className="flex items-center justify-between gap-2 p-3 border border-gray-200 rounded-lg">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm sm:text-base font-medium truncate">
+                      <Link to={`/books/${rs.book.id}`} className="hover:text-amber-800 hover:underline">
+                        {rs.book.title}
+                      </Link>
+                    </p>
+                    <p className="text-xs sm:text-sm text-gray-600 truncate">{rs.book.author}</p>
+                  </div>
+                  <span className="px-2 py-1 rounded text-xs font-semibold bg-amber-100 text-amber-800 flex-shrink-0">
+                    Checked out
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Checkout happens where the book is: on its own page, from
             the Lend button on this member's to-be-read list, or by

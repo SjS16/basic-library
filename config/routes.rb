@@ -42,6 +42,8 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :notifications, only: [ :index, :destroy ]
+
   get "invite_link", to: "invite_links#show"
   post "invite_link/regenerate", to: "invite_links#regenerate"
   post "invite_link/accept", to: "invite_links#accept"

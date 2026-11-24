@@ -47,7 +47,7 @@ class MembershipInvitesController < ApplicationController
     return render json: { error: "This invite belongs to another account." }, status: :forbidden unless @invite.user == current_user
     return render json: { error: "This invite is no longer open." }, status: :unprocessable_entity unless @invite.pending?
 
-    current_user.activate_membership!
+    current_user.activate_membership!(notify_owner: true)
     @invite.update!(status: :accepted)
     render json: invite_json(@invite)
   end

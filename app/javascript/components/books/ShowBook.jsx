@@ -257,6 +257,12 @@ function ShowBook() {
               label="Rating"
               value={book.rating ? `${book.rating}/5 ⭐` : "No rating"}
             />
+            {book.member_rating?.count > 0 && (
+              <InfoField
+                label="Member rating"
+                value={`${"★".repeat(Math.round(book.member_rating.average))}${"☆".repeat(5 - Math.round(book.member_rating.average))} ${book.member_rating.average} (${book.member_rating.count} member${book.member_rating.count === 1 ? "" : "s"})`}
+              />
+            )}
 
             {book.id && book.in_library && !book.available && book.current_loan?.borrower && (
               <div>
