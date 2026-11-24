@@ -1,5 +1,7 @@
 class BorrowersController < ApplicationController
   before_action :set_borrower, only: [ :show, :edit, :update, :destroy, :checkout_book, :return_book ]
+  before_action :require_owner, only: [ :index, :new, :create, :edit, :update, :destroy, :checkout_book, :return_book ]
+  before_action :require_owner_or_self, only: [ :show ]
 
   # GET /borrowers or /borrowers.json
   def index
@@ -114,6 +116,12 @@ class BorrowersController < ApplicationController
   end
 
   private
+
+  def require_owner_or_self
+    return if owner? || current_user&.borrower == @borrower
+
+    redirect_to root_path, alert: "You can only view your own borrower page."
+  end
 
   def set_borrower
     @borrower = Borrower.find(params[:id])
