@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getAuthHeaders } from "../../utils/csrf";
 import { useOpenLibrarySearch } from "../../hooks/useOpenLibrarySearch";
-import { fetchBookDetails, fetchBookByISBN } from "../../utils/openLibraryApi";
+import { fetchBookDetails, fetchBookByISBN, fetchBookByTitleAuthor } from "../../utils/openLibraryApi";
 import SearchResults from "./SearchResults";
 import BookForm from "./BookForm";
 import BarcodeScanner from "./BarcodeScanner";
@@ -19,6 +19,11 @@ function EditBook() {
 
   const pageHeading = id ? "Edit Book" : "Add New Book";
 
+  const [olSuggestion, setOlSuggestion] = useState(null);
+  const [olNote, setOlNote] = useState(null);
+  const [olChecking, setOlChecking] = useState(false);
+  const olCheckedForId = useRef(null);
+
   useEffect(() => {
     if (id) {
       fetch(`/books/${id}.json`)
@@ -27,6 +32,65 @@ function EditBook() {
         .catch((err) => console.error("Error fetching book:", err));
     }
   }, [id]);
+
+  // Fields Open Library is allowed to fill in on the edit page.
+  // It only ever adds to blanks; it never overwrites what's here.
+  const FILLABLE_FIELDS = [
+    ["cover_url", "a cover image"],
+    ["description", "a description"],
+    ["published_year", "the published year"],
+    ["genre", "a genre"],
+    ["isbn", "an ISBN"],
+  ];
+
+  const fillableFrom = (suggestion, current) =>
+    FILLABLE_FIELDS.filter(([field]) => suggestion?.[field] && !current?.[field]);
+
+  const checkOpenLibrary = async (current, { quiet = true } = {}) => {
+    if (!current?.title) return;
+    setOlChecking(true);
+    try {
+      let details = null;
+      if (current.isbn) {
+        details = await fetchBookByISBN(current.isbn).catch(() => null);
+      }
+      if (!details || fillableFrom(details, current).length === 0) {
+        const bySearch = await fetchBookByTitleAuthor(current.title, current.author).catch(() => null);
+        if (bySearch && fillableFrom(bySearch, current).length > 0) details = bySearch;
+      }
+      if (details && fillableFrom(details, current).length > 0) {
+        setOlSuggestion(details);
+        setOlNote(null);
+      } else {
+        setOlSuggestion(null);
+        if (!quiet) setOlNote("Open Library has nothing extra for this book.");
+      }
+    } catch (err) {
+      if (!quiet) setOlNote("The Open Library check failed. Try again in a moment.");
+    } finally {
+      setOlChecking(false);
+    }
+  };
+
+  // Check once, as soon as an existing book loads.
+  useEffect(() => {
+    if (id && book.id && olCheckedForId.current !== book.id) {
+      olCheckedForId.current = book.id;
+      checkOpenLibrary(book);
+    }
+  }, [id, book.id]);
+
+  const applySuggestion = () => {
+    if (!olSuggestion) return;
+    setBook((prev) => {
+      const merged = { ...prev };
+      fillableFrom(olSuggestion, prev).forEach(([field]) => {
+        merged[field] = olSuggestion[field];
+      });
+      return merged;
+    });
+    setOlSuggestion(null);
+  };
 
   const handleTitleChange = (value) => {
     setBook({ ...book, title: value });
@@ -107,6 +171,8 @@ function EditBook() {
       });
   };
 
+  const olFillable = olSuggestion ? fillableFrom(olSuggestion, book) : [];
+
   return (
     <div className="p-4 sm:p-6 bg-white rounded shadow max-w-2xl mx-auto">
       <h1 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">{pageHeading}</h1>
@@ -122,6 +188,42 @@ function EditBook() {
       {saveError && (
         <div className="mb-4 p-3 bg-amber-50 border border-amber-300 rounded-lg">
           <p className="text-amber-800 text-sm font-medium">{saveError}</p>
+        </div>
+      )}
+
+      {/* Open Library enrichment for existing books: offers to fill
+          blank fields and never overwrites anything already entered. */}
+      {id && olFillable.length > 0 && (
+        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg flex gap-3">
+          {olSuggestion.cover_url && !book.cover_url && (
+            <img src={olSuggestion.cover_url} alt="" className="w-12 self-start rounded shadow" />
+          )}
+          <div className="flex-1">
+            <p className="text-sm text-blue-900 font-medium">Open Library has more for this book</p>
+            <p className="text-sm text-blue-800">
+              It can add {olFillable.map(([, label]) => label).join(", ")}. Nothing you already have will be overwritten.
+            </p>
+            <div className="flex gap-2 mt-2">
+              <button onClick={applySuggestion} className="px-3 py-1.5 bg-amber-800 text-amber-50 rounded text-sm hover:bg-amber-900">
+                Add missing details
+              </button>
+              <button onClick={() => setOlSuggestion(null)} className="px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded text-sm hover:bg-gray-50">
+                Dismiss
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {id && olFillable.length === 0 && (
+        <div className="mb-4">
+          <button
+            onClick={() => checkOpenLibrary(book, { quiet: false })}
+            disabled={olChecking}
+            className="text-sm text-amber-800 underline hover:text-amber-900 disabled:opacity-50"
+          >
+            {olChecking ? "Checking Open Library…" : "Check Open Library for a cover and more details"}
+          </button>
+          {olNote && <p className="text-sm text-gray-500 mt-1">{olNote}</p>}
         </div>
       )}
 

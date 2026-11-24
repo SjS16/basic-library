@@ -78,3 +78,21 @@ export async function fetchBookByISBN(isbn) {
     throw error;
   }
 }
+
+// One-shot lookup by title (and author, when known): returns the
+// same details shape as fetchBookDetails for the best match, or
+// null when Open Library has nothing. Falls back to a title-only
+// search when the author string doesn't match their records.
+export async function fetchBookByTitleAuthor(title, author) {
+  const search = async (withAuthor) => {
+    const params = new URLSearchParams({ title, limit: "1" });
+    if (withAuthor && author) params.set("author", author);
+    const res = await fetch(`https://openlibrary.org/search.json?${params}`);
+    const data = await res.json();
+    return data.docs?.[0] || null;
+  };
+
+  const doc = (await search(true)) || (author ? await search(false) : null);
+  if (!doc) return null;
+  return fetchBookDetails(doc);
+}
