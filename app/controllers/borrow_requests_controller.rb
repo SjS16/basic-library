@@ -11,11 +11,11 @@ class BorrowRequestsController < ApplicationController
       format.json do
         requests = if owner?
                      BorrowRequest.includes(:borrower, :book).recent_first
-                   elsif current_user&.borrower
+        elsif current_user&.borrower
                      current_user.borrower.borrow_requests.includes(:book).recent_first
-                   else
+        else
                      BorrowRequest.none
-                   end
+        end
         render json: { borrow_requests: requests.map { |request| request_json(request) } }
       end
     end

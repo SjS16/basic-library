@@ -81,9 +81,9 @@ class BooksController < ApplicationController
 
     saved = if @book.new_record?
               @book.save
-            else
+    else
               @book.update(book_params.merge(in_library: true, available: true))
-            end
+    end
 
     respond_to do |format|
       if saved

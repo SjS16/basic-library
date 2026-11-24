@@ -10,9 +10,9 @@ class MembershipRequestsController < ApplicationController
       format.json do
         requests = if owner?
                      MembershipRequest.includes(:user).recent_first
-                   else
+        else
                      current_user.membership_requests.recent_first
-                   end
+        end
         render json: { membership_requests: requests.map { |request| request_json(request) } }
       end
     end

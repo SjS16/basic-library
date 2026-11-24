@@ -11,9 +11,9 @@ class MembershipInvitesController < ApplicationController
       format.json do
         invites = if owner?
                     MembershipInvite.includes(:user).recent_first
-                  else
+        else
                     current_user.membership_invites.recent_first
-                  end
+        end
         render json: { membership_invites: invites.map { |invite| invite_json(invite) } }
       end
     end
