@@ -2,13 +2,14 @@ class Book < ApplicationRecord
   has_many :loans, dependent: :destroy
   has_many :borrowers, through: :loans
   has_many :reading_statuses, dependent: :destroy
+  has_many :borrow_requests, dependent: :destroy
+
+  # Books the library actually owns. Books members add to their own
+  # to-be-read lists exist as records too, flagged in_library: false.
+  scope :in_library, -> { where(in_library: true) }
 
   validates :title, presence: true
-  validates :title, uniqueness: {
-    scope: :author,
-    case_sensitive: false,
-    message: "is already in the library for this author"
-  }
+  validate :no_duplicate_title_and_author
 
   # Get current loan (if book is checked out)
   def current_loan
@@ -23,5 +24,20 @@ class Book < ApplicationRecord
   # Check if book is overdue
   def overdue?
     current_loan&.overdue? || false
+  end
+
+  private
+
+  # The same title by the same author counts as a duplicate no
+  # matter the casing of either. The built-in uniqueness validator
+  # only lowercases the attribute itself, not its scope, so the
+  # same author typed in a different case slipped through.
+  def no_duplicate_title_and_author
+    return if title.blank?
+
+    duplicate = Book.where("LOWER(title) = ? AND LOWER(COALESCE(author, '')) = ?",
+                           title.strip.downcase, author.to_s.strip.downcase)
+    duplicate = duplicate.where.not(id: id) if persisted?
+    errors.add(:title, "is already in the library for this author") if duplicate.exists?
   end
 end

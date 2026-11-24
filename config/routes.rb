@@ -2,13 +2,46 @@ Rails.application.routes.draw do
   resource :session
   resource :registration, only: [ :new, :create ]
   resources :passwords, param: :token
+  get "me", to: "me#show"
+  resource :profile, only: [ :show, :update ]
   resources :borrowers do
+    collection do
+      get :name_check
+    end
     member do
       post :checkout_book
       post :return_book
     end
     resources :reading_statuses, only: [ :create, :update, :destroy ]
   end
+
+  resources :borrow_requests, only: [ :index, :create ] do
+    member do
+      post :approve
+      post :decline
+      post :cancel
+    end
+  end
+
+  post "borrowers/:borrower_id/wishlist_books", to: "wishlist_books#create"
+
+  resources :membership_requests, only: [ :index, :create ] do
+    member do
+      post :approve
+      post :decline
+    end
+  end
+
+  resources :membership_invites, only: [ :index, :create ] do
+    member do
+      post :accept
+      post :decline
+    end
+  end
+
+  get "invite_link", to: "invite_links#show"
+  post "invite_link/regenerate", to: "invite_links#regenerate"
+  post "invite_link/accept", to: "invite_links#accept"
 
   resources :loans, only: [ :index, :show, :create, :update ]
 

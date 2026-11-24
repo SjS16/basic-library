@@ -4,7 +4,7 @@ class BooksController < ApplicationController
 
   # GET /books or /books.json
   def index
-    @books = Book.all
+    @books = Book.in_library
     respond_to do |format|
       format.html # normal Rails HTML
       format.json { render json: @books } # JSON endpoint
@@ -16,7 +16,17 @@ class BooksController < ApplicationController
     @book = Book.find(params[:id])
     respond_to do |format|
       format.html
-      format.json { render json: @book }
+      format.json {
+        # Include who currently has the book, so its page can link
+        # to that member.
+        loan = @book.current_loan
+        render json: @book.as_json.merge(
+          "current_loan" => loan&.as_json(
+            only: [ :id, :due_date, :checked_out_at ],
+            include: { borrower: { only: [ :id, :name ] } }
+          )
+        )
+      }
     end
   end
 
@@ -40,10 +50,22 @@ class BooksController < ApplicationController
 
   # POST /books or /books.json
   def create
-    @book = Book.new(book_params)
+    # If a member previously wished for this book, its record exists
+    # flagged as not in the library. Adding it for real claims that
+    # record, so members' lists now point at the owner's copy.
+    existing = Book.where("lower(title) = :title AND lower(author) = :author",
+                          title: book_params[:title].to_s.strip.downcase,
+                          author: book_params[:author].to_s.strip.downcase).first
+    @book = (existing && !existing.in_library?) ? existing : Book.new(book_params)
+
+    saved = if @book.new_record?
+              @book.save
+            else
+              @book.update(book_params.merge(in_library: true, available: true))
+            end
 
     respond_to do |format|
-      if @book.save
+      if saved
         format.html { redirect_to @book, notice: "Book was successfully created." }
         format.json { render :show, status: :created, location: @book }
       else

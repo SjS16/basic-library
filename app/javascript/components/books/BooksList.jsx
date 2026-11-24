@@ -5,11 +5,14 @@ import BookFilter from "../books/bookListHelpers/BookFilter";
 import BookSort from "../books/bookListHelpers/BookSort";
 import BookItem from "../books/bookListHelpers/BookItem";
 import { getAuthHeaders } from "../../utils/csrf";
+import { useCurrentUser } from "../../hooks/useCurrentUser";
 
 
 function BooksList() {
   const navigate = useNavigate();
   const location = useLocation();
+  const currentUser = useCurrentUser();
+  const isOwner = !!currentUser?.owner;
   const [allBooks, setAllBooks] = useState([]);
   const [filteredBooks, setFilteredBooks] = useState([]);
 
@@ -124,16 +127,18 @@ function BooksList() {
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">My Library</h1>
             <p className="text-sm sm:text-base text-gray-600">Manage and explore your book collection</p>
           </div>
-          <button
-            className="px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-amber-800 to-amber-900 text-amber-50 rounded-lg hover:from-amber-900 hover:to-amber-950 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base whitespace-nowrap"
-            onClick={() => navigate("/books/new")}
-          >
-            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            <span className="hidden sm:inline">Add New Book</span>
-            <span className="sm:hidden">Add Book</span>
-          </button>
+          {isOwner && (
+            <button
+              className="px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-amber-800 to-amber-900 text-amber-50 rounded-lg hover:from-amber-900 hover:to-amber-950 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base whitespace-nowrap"
+              onClick={() => navigate("/books/new")}
+            >
+              <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              <span className="hidden sm:inline">Add New Book</span>
+              <span className="sm:hidden">Add Book</span>
+            </button>
+          )}
         </div>
 
         {/* Stats Cards */}
@@ -184,10 +189,10 @@ function BooksList() {
           <h3 className="text-xl font-semibold text-gray-900 mb-2">No books found</h3>
           <p className="text-gray-600 mb-4">
             {allBooks.length === 0 
-              ? "Get started by adding your first book to the library"
+              ? (isOwner ? "Get started by adding your first book to the library" : "No books on the shelves yet")
               : "Try adjusting your search or filter criteria"}
           </p>
-          {allBooks.length === 0 && (
+          {allBooks.length === 0 && isOwner && (
             <button
               className="px-6 py-2 bg-amber-800 text-amber-50 rounded-lg hover:bg-amber-900 transition-colors"
               onClick={() => navigate("/books/new")}
@@ -202,6 +207,7 @@ function BooksList() {
             <BookItem
               key={book.id}
               book={book}
+              isOwner={isOwner}
               handleEdit={handleEdit}
               handleDelete={handleDelete}
               navigate={navigate}

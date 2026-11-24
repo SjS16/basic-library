@@ -1,6 +1,6 @@
 class BorrowersController < ApplicationController
   before_action :set_borrower, only: [ :show, :edit, :update, :destroy, :checkout_book, :return_book ]
-  before_action :require_owner, only: [ :index, :new, :create, :edit, :update, :destroy, :checkout_book, :return_book ]
+  before_action :require_owner, only: [ :index, :new, :create, :edit, :update, :destroy, :checkout_book, :return_book, :name_check ]
   before_action :require_owner_or_self, only: [ :show ]
 
   # GET /borrowers or /borrowers.json
@@ -30,6 +30,20 @@ class BorrowersController < ApplicationController
         )
       }
     end
+  end
+
+  # GET /borrowers/name_check.json?name=Sam — owner only.
+  # Powers the quick-add warning on the book page: members who
+  # already use this name, and accounts with this name who may be
+  # the same person (accounts link by email, not by name).
+  def name_check
+    name = params[:name].to_s.strip.downcase
+    borrowers = Borrower.where("LOWER(name) = ?", name).order(:name)
+    accounts = User.where("LOWER(name) = ?", name).order(:name)
+    render json: {
+      borrowers: borrowers.map { |b| { id: b.id, name: b.name, email: b.email } },
+      accounts: accounts.map { |u| { id: u.id, name: u.name, email_address: u.email_address, member: u.borrower_id.present? } }
+    }
   end
 
   # GET /borrowers/new

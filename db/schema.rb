@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_25_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_25_000007) do
   create_table "books", force: :cascade do |t|
     t.string "author"
     t.boolean "available"
@@ -18,10 +18,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_25_000001) do
     t.datetime "created_at", null: false
     t.text "description"
     t.string "genre"
+    t.boolean "in_library", default: true, null: false
     t.integer "published_year"
     t.integer "rating"
     t.string "title"
     t.datetime "updated_at", null: false
+  end
+
+  create_table "borrow_requests", force: :cascade do |t|
+    t.integer "book_id", null: false
+    t.integer "borrower_id", null: false
+    t.datetime "created_at", null: false
+    t.string "status", default: "pending", null: false
+    t.datetime "updated_at", null: false
+    t.index ["book_id"], name: "index_borrow_requests_on_book_id"
+    t.index ["borrower_id"], name: "index_borrow_requests_on_borrower_id"
+    t.index ["status"], name: "index_borrow_requests_on_status"
   end
 
   create_table "borrowers", force: :cascade do |t|
@@ -31,6 +43,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_25_000001) do
     t.integer "standing", default: 100, null: false
     t.datetime "updated_at", null: false
     t.index ["email"], name: "index_borrowers_on_email", unique: true
+  end
+
+  create_table "invite_links", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "token", null: false
+    t.datetime "updated_at", null: false
+    t.index ["token"], name: "index_invite_links_on_token", unique: true
   end
 
   create_table "loans", force: :cascade do |t|
@@ -45,6 +64,24 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_25_000001) do
     t.index ["book_id"], name: "index_loans_on_book_id"
     t.index ["borrower_id", "returned_at"], name: "index_loans_on_borrower_id_and_returned_at"
     t.index ["borrower_id"], name: "index_loans_on_borrower_id"
+  end
+
+  create_table "membership_invites", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "status", default: "pending", null: false
+    t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
+    t.index ["status"], name: "index_membership_invites_on_status"
+    t.index ["user_id"], name: "index_membership_invites_on_user_id"
+  end
+
+  create_table "membership_requests", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "status", default: "pending", null: false
+    t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
+    t.index ["status"], name: "index_membership_requests_on_status"
+    t.index ["user_id"], name: "index_membership_requests_on_user_id"
   end
 
   create_table "reading_statuses", force: :cascade do |t|
@@ -73,6 +110,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_25_000001) do
     t.integer "borrower_id"
     t.datetime "created_at", null: false
     t.string "email_address", null: false
+    t.string "name"
     t.boolean "owner", default: false, null: false
     t.string "password_digest", null: false
     t.datetime "updated_at", null: false
@@ -80,8 +118,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_25_000001) do
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
   end
 
+  add_foreign_key "borrow_requests", "books"
+  add_foreign_key "borrow_requests", "borrowers"
   add_foreign_key "loans", "books"
   add_foreign_key "loans", "borrowers"
+  add_foreign_key "membership_invites", "users"
+  add_foreign_key "membership_requests", "users"
   add_foreign_key "reading_statuses", "books"
   add_foreign_key "reading_statuses", "borrowers"
   add_foreign_key "sessions", "users"

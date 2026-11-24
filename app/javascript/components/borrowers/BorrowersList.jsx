@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import { getAuthHeaders } from "../../utils/csrf";
 
 function BorrowersList() {
   const [borrowers, setBorrowers] = useState([]);
@@ -12,6 +13,74 @@ function BorrowersList() {
       .then((data) => setBorrowers(data))
       .catch((err) => console.error("Error fetching borrowers:", err));
   }, [location.key]);
+
+  const [inviteToken, setInviteToken] = useState("");
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteMessage, setInviteMessage] = useState(null);
+  const [sentInvites, setSentInvites] = useState([]);
+  const [copied, setCopied] = useState(false);
+
+  const fetchInvites = () => {
+    fetch("/invite_link.json")
+      .then((res) => (res.ok ? res.json() : {}))
+      .then((data) => setInviteToken(data.token || ""))
+      .catch(() => {});
+    fetch("/membership_invites.json")
+      .then((res) => (res.ok ? res.json() : { membership_invites: [] }))
+      .then((data) => setSentInvites(data.membership_invites || []))
+      .catch(() => {});
+  };
+
+  useEffect(fetchInvites, []);
+
+  const inviteUrl = inviteToken ? `${window.location.origin}/registration/new?invite=${inviteToken}` : "";
+  const pendingInvites = sentInvites.filter((i) => i.status === "pending");
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(inviteUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      setInviteMessage({ type: "error", text: "Copy failed. Select the link text and copy it manually." });
+    }
+  };
+
+  const handleRegenerate = async () => {
+    if (!window.confirm("Regenerate the invite link? The old link will stop working everywhere you shared it.")) return;
+    try {
+      const res = await fetch("/invite_link/regenerate.json", { method: "POST", headers: getAuthHeaders() });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setInviteToken(data.token || "");
+        setInviteMessage({ type: "success", text: "New invite link created. The old one no longer works." });
+      }
+    } catch (err) {
+      setInviteMessage({ type: "error", text: "Could not regenerate the link." });
+    }
+  };
+
+  const handleEmailInvite = async () => {
+    if (!inviteEmail.trim()) return;
+    setInviteMessage(null);
+    try {
+      const res = await fetch("/membership_invites.json", {
+        method: "POST",
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ email: inviteEmail.trim() }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setInviteMessage({ type: "success", text: `Invite sent to ${inviteEmail.trim()}. It will be waiting in their Profile.` });
+        setInviteEmail("");
+        fetchInvites();
+      } else {
+        setInviteMessage({ type: "error", text: data.error || "Could not send the invite." });
+      }
+    } catch (err) {
+      setInviteMessage({ type: "error", text: "Could not send the invite." });
+    }
+  };
 
   const getStandingColor = (standing) => {
     if (standing >= 90) return "green";
@@ -84,6 +153,73 @@ function BorrowersList() {
             </p>
           </div>
         </div>
+      </div>
+
+      {/* Invite People */}
+      <div className="bg-white rounded-lg shadow p-4 sm:p-6 mb-6 border-l-4 border-amber-900">
+        <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-1">Invite people</h2>
+        <p className="text-sm text-gray-600 mb-4">
+          Membership is by invitation, so the library stays within your circle. Share the link
+          with someone new, or invite an existing account by email.
+        </p>
+
+        <div className="mb-4">
+          <label className="block text-sm font-medium mb-1">Invite link</label>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <input
+              readOnly
+              value={inviteUrl}
+              onFocus={(e) => e.target.select()}
+              className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg bg-gray-50 text-gray-700"
+            />
+            <div className="flex gap-2">
+              <button onClick={handleCopyLink} className="px-4 py-2 bg-amber-800 text-amber-50 rounded-lg hover:bg-amber-900 text-sm font-medium">
+                {copied ? "Copied!" : "Copy link"}
+              </button>
+              <button onClick={handleRegenerate} className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm font-medium">
+                Regenerate
+              </button>
+            </div>
+          </div>
+          <p className="text-xs text-gray-500 mt-1">Anyone who signs up through this link becomes a member automatically. Regenerating kills the old link everywhere it was shared.</p>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Invite by email (existing accounts)</label>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <input
+              type="email"
+              value={inviteEmail}
+              onChange={(e) => setInviteEmail(e.target.value)}
+              placeholder="friend@example.com"
+              className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg"
+            />
+            <button onClick={handleEmailInvite} disabled={!inviteEmail.trim()} className="px-4 py-2 bg-amber-800 text-amber-50 rounded-lg hover:bg-amber-900 text-sm font-medium disabled:bg-gray-300">
+              Send invite
+            </button>
+          </div>
+          <p className="text-xs text-gray-500 mt-1">They accept from their Profile page. No account with that email yet? Send them the invite link instead.</p>
+        </div>
+
+        {inviteMessage && (
+          <p className={`text-sm mt-3 ${inviteMessage.type === "success" ? "text-green-700" : "text-red-700"}`}>
+            {inviteMessage.text}
+          </p>
+        )}
+
+        {pendingInvites.length > 0 && (
+          <div className="mt-4 pt-4 border-t">
+            <p className="text-sm font-medium mb-2">Waiting for acceptance</p>
+            <ul className="space-y-1">
+              {pendingInvites.map((invite) => (
+                <li key={invite.id} className="text-sm text-gray-600">
+                  {invite.user.name ? `${invite.user.name} · ` : ""}{invite.user.email_address}
+                  <span className="text-gray-400"> · invited {new Date(invite.created_at).toLocaleDateString()}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
 
       {/* Borrowers List */}

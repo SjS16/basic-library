@@ -1,12 +1,29 @@
 class User < ApplicationRecord
   has_secure_password
   has_many :sessions, dependent: :destroy
+  has_many :membership_requests, dependent: :destroy
+  has_many :membership_invites, dependent: :destroy
   belongs_to :borrower, optional: true
 
   normalizes :email_address, with: ->(e) { e.strip.downcase }
 
   before_create :claim_borrower_record
   before_create :make_first_user_owner
+
+  # Grants this account membership of the library: links the member
+  # record with this email, creating it first if none exists. Every
+  # door into membership (owner pre-adding a record, an approved join
+  # request, an accepted invite, the invite link) ends here.
+  def activate_membership!
+    return borrower if borrower_id.present?
+
+    record = Borrower.where("LOWER(email) = ?", email_address).first ||
+             Borrower.create!(name: name.presence || email_address.split("@").first,
+                              email: email_address,
+                              standing: 100)
+    update!(borrower: record)
+    record
+  end
 
   private
 

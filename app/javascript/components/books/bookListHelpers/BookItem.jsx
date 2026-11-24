@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import StarRating from "./StarRating";
 import BookActions from "./BookActions";
 
-function BookItem({ book, handleEdit, handleDelete, navigate }) {
+function BookItem({ book, isOwner, handleEdit, handleDelete, navigate }) {
   const handleUpdate = (attr, value) => handleEdit(attr, value, book);
   
   return (
@@ -54,7 +54,7 @@ function BookItem({ book, handleEdit, handleDelete, navigate }) {
                 )}
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className={`flex items-center gap-2 ${isOwner ? "" : "pointer-events-none"}`}>
                 <StarRating
                   rating={book.rating || 0}
                   setRating={(newRating) => handleUpdate("rating", newRating)}
@@ -83,15 +83,17 @@ function BookItem({ book, handleEdit, handleDelete, navigate }) {
         </div>
       </div>
 
-      {/* Action Buttons Footer */}
-      <div className="bg-gray-50 px-4 sm:px-5 py-3 border-t border-gray-100">
-        <BookActions
-          book={book}
-          onUpdate={handleUpdate}
-          onDelete={() => handleDelete(book)}
-          onNavigate={() => navigate(`/books/${book.id}/edit`)}
-        />
-      </div>
+      {/* Action Buttons Footer (owner only) */}
+      {isOwner && (
+        <div className="bg-gray-50 px-4 sm:px-5 py-3 border-t border-gray-100">
+          <BookActions
+            book={book}
+            onUpdate={handleUpdate}
+            onDelete={() => handleDelete(book)}
+            onNavigate={() => navigate(`/books/${book.id}/edit`)}
+          />
+        </div>
+      )}
     </div>
   );
 }

@@ -4,6 +4,9 @@ class BorrowersControllerTest < ActionDispatch::IntegrationTest
   setup do
     @borrower = borrowers(:excellent_borrower)
     @book = books(:available_book)
+    @owner = users(:two)
+    @owner.update!(owner: true)
+    sign_in_as(@owner)
   end
 
   test "should get index" do

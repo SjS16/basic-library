@@ -1,6 +1,7 @@
 class ReadingStatusesController < ApplicationController
   before_action :set_borrower
-  before_action :require_owner_or_borrower
+  before_action :require_owner_or_borrower, only: [ :update, :destroy ]
+  before_action :require_borrower_self, only: [ :create ]
   before_action :set_reading_status, only: [ :update, :destroy ]
 
   # POST /borrowers/:borrower_id/reading_statuses
@@ -47,6 +48,17 @@ class ReadingStatusesController < ApplicationController
     return if owner? || current_user&.borrower == @borrower
 
     redirect_to root_path, alert: "You can only manage your own reading lists."
+  end
+
+  # Adding to a list is the member's own job. The owner's role on a
+  # member's page is lending, not list-keeping.
+  def require_borrower_self
+    return if current_user&.borrower == @borrower
+
+    respond_to do |format|
+      format.html { redirect_to @borrower, alert: "Only the member can add books to their own list." }
+      format.json { render json: { error: "Only the member can add books to their own list." }, status: :forbidden }
+    end
   end
 
   def set_borrower

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getAuthHeaders } from "../../utils/csrf";
+import { useCurrentUser } from "../../hooks/useCurrentUser";
 import ReadingList from "./ReadingList";
 
 function ShowBorrower() {
@@ -12,6 +13,9 @@ function ShowBorrower() {
   const [selectedBookId, setSelectedBookId] = useState("");
   const navigate = useNavigate();
   const { id } = useParams();
+  const currentUser = useCurrentUser();
+  const isOwner = !!currentUser?.owner;
+  const viewerIsSelf = !!currentUser?.borrower_id && currentUser.borrower_id === Number(id);
 
   const fetchBorrowerData = () => {
     if (id) {
@@ -70,6 +74,19 @@ function ShowBorrower() {
       .catch((err) => console.error("Error returning book:", err));
   };
 
+  const handleLendBook = (bookId) => {
+    fetch(`/borrowers/${id}/checkout_book.json`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ book_id: bookId }),
+    })
+      .then((res) => res.json())
+      .then(() => {
+        window.location.reload();
+      })
+      .catch((err) => console.error("Error lending book:", err));
+  };
+
   if (!borrower) {
     return <div className="text-center p-12">Loading...</div>;
   }
@@ -101,10 +118,10 @@ function ShowBorrower() {
       {/* Header */}
       <div className="mb-4 sm:mb-6">
         <button
-          onClick={() => navigate("/borrowers")}
+          onClick={() => navigate(isOwner ? "/borrowers" : "/books")}
           className="text-sm sm:text-base text-blue-600 hover:text-blue-800 mb-3 sm:mb-4 inline-flex items-center gap-2"
         >
-          ← Back to Borrowers
+          {isOwner ? "← Back to Borrowers" : "← Back to Books"}
         </button>
         
         <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 lg:p-8">
@@ -127,17 +144,19 @@ function ShowBorrower() {
               </div>
             </div>
 
-            <button
-              onClick={() => navigate(`/borrowers/${id}/edit`)}
-              className="px-3 sm:px-4 py-2 text-sm sm:text-base text-gray-700 hover:bg-gray-100 rounded-lg transition-colors self-start sm:self-auto"
-            >
-              Edit
-            </button>
+            {isOwner && (
+              <button
+                onClick={() => navigate(`/borrowers/${id}/edit`)}
+                className="px-3 sm:px-4 py-2 text-sm sm:text-base text-gray-700 hover:bg-gray-100 rounded-lg transition-colors self-start sm:self-auto"
+              >
+                Edit
+              </button>
+            )}
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+      <div className={`grid grid-cols-1 ${isOwner ? "lg:grid-cols-2" : ""} gap-4 sm:gap-6`}>
         {/* Current Loans */}
         <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6">
           <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">
@@ -171,12 +190,14 @@ function ShowBorrower() {
                     <p className="text-xs text-gray-500 mb-2 sm:mb-3">
                       Due: {new Date(loan.due_date).toLocaleDateString()}
                     </p>
-                    <button
-                      onClick={() => handleReturn(loan.book.id)}
-                      className="w-full px-3 py-2 bg-amber-700 text-amber-50 rounded hover:bg-amber-800 transition-colors text-xs sm:text-sm font-medium"
-                    >
-                      Return Book
-                    </button>
+                    {isOwner && (
+                      <button
+                        onClick={() => handleReturn(loan.book.id)}
+                        className="w-full px-3 py-2 bg-amber-700 text-amber-50 rounded hover:bg-amber-800 transition-colors text-xs sm:text-sm font-medium"
+                      >
+                        Return Book
+                      </button>
+                    )}
                   </div>
                 );
               })}
@@ -184,7 +205,8 @@ function ShowBorrower() {
           )}
         </div>
 
-        {/* Checkout New Book */}
+        {/* Checkout New Book (owner only) */}
+        {isOwner && (
         <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6">
           <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">Checkout Book</h2>
 
@@ -227,15 +249,20 @@ function ShowBorrower() {
             </>
           )}
         </div>
+        )}
       </div>
 
       {/* Reading List Section */}
       <div className="mt-4 sm:mt-6">
         <ReadingList
           borrowerId={id}
+          borrowerName={borrower.name}
           readingStatuses={readingStatuses}
           allBooks={allBooks}
           onUpdate={fetchBorrowerData}
+          isOwner={isOwner}
+          onLend={handleLendBook}
+          viewerIsSelf={viewerIsSelf}
         />
       </div>
     </div>

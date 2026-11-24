@@ -1,5 +1,5 @@
 import React from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate, useParams } from "react-router-dom";
 import "./stylesheets/application.tailwind.css";
 import NavBar from "./components/NavBar";
 import Home from "./components/Home";
@@ -9,6 +9,26 @@ import EditBook from "./components/books/EditBook";
 import BorrowersList from "./components/borrowers/BorrowersList";
 import ShowBorrower from "./components/borrowers/ShowBorrower";
 import EditBorrower from "./components/borrowers/EditBorrower";
+import Profile from "./components/Profile";
+import RequestsPage from "./components/RequestsPage";
+import { useCurrentUser } from "./hooks/useCurrentUser";
+
+// Renders children only for the library owner; everyone else goes home.
+// (The server enforces this too; this just keeps the UI honest.)
+function OwnerOnly({ children }) {
+  const currentUser = useCurrentUser();
+  if (!currentUser) return null;
+  return currentUser.owner ? children : <Navigate to="/" replace />;
+}
+
+// A borrower page is visible to the owner and to the borrower it belongs to.
+function BorrowerPage({ children }) {
+  const currentUser = useCurrentUser();
+  const { id } = useParams();
+  if (!currentUser) return null;
+  const allowed = currentUser.owner || currentUser.borrower_id === Number(id);
+  return allowed ? children : <Navigate to="/" replace />;
+}
 
 function App() {
   return (
@@ -19,13 +39,16 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/books" element={<BooksList />} />
           <Route path="/books/:id" element={<ShowBook />} />
-          <Route path="/books/:id/edit" element={<EditBook />} />
-          <Route path="/books/new" element={<EditBook />} />
-          
-          <Route path="/borrowers" element={<BorrowersList />} />
-          <Route path="/borrowers/:id" element={<ShowBorrower />} />
-          <Route path="/borrowers/:id/edit" element={<EditBorrower />} />
-          <Route path="/borrowers/new" element={<EditBorrower />} />
+          <Route path="/books/:id/edit" element={<OwnerOnly><EditBook /></OwnerOnly>} />
+          <Route path="/books/new" element={<OwnerOnly><EditBook /></OwnerOnly>} />
+
+          <Route path="/borrowers" element={<OwnerOnly><BorrowersList /></OwnerOnly>} />
+          <Route path="/borrowers/:id" element={<BorrowerPage><ShowBorrower /></BorrowerPage>} />
+          <Route path="/borrowers/:id/edit" element={<OwnerOnly><EditBorrower /></OwnerOnly>} />
+          <Route path="/borrowers/new" element={<OwnerOnly><EditBorrower /></OwnerOnly>} />
+
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/requests" element={<RequestsPage />} />
         </Routes>
       </main>
     </div>

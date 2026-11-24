@@ -31,7 +31,12 @@
   </head>
 
 <body class="font-serif">
-  <div id="react-root"></div>
+  <%# The React app mounts into #react-root on app pages. The sign-in,
+      sign-up, and password pages are plain server-rendered pages and must
+      not mount it, or the app shell pushes their forms down the page. %>
+  <% unless %w[sessions registrations passwords].include?(controller_name) %>
+    <div id="react-root"></div>
+  <% end %>
   <%= yield %>
 </body>
 </html>

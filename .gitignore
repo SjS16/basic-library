@@ -34,6 +34,9 @@
 # Exported library data contains borrower names and emails; never commit it.
 /db/data_export.json
 
+# Exported library data contains borrower names and emails; never commit it.
+/db/data_export.json
+
 /public/assets
 
 # Ignore key files for decrypting credentials and more.

@@ -5,6 +5,11 @@ class ReadingStatusesControllerTest < ActionDispatch::IntegrationTest
     @borrower = borrowers(:good_borrower)
     @book = books(:available_book)
     @reading_status = reading_statuses(:want_to_read)
+    # Creating a reading status is member-self-only now, so these
+    # tests sign in as the member who owns the list.
+    @user = users(:one)
+    @user.update!(borrower: @borrower)
+    sign_in_as(@user)
   end
 
   test "should create reading status" do

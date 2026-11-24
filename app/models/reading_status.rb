@@ -13,6 +13,12 @@ class ReadingStatus < ApplicationRecord
   validates :rating, numericality: { greater_than_or_equal_to: 1, less_than_or_equal_to: 5, allow_nil: true }
   validates :borrower_id, uniqueness: { scope: :book_id, message: "has already marked this book" }
 
+  # A to-be-read list is an intention queue, not an archive, so it is
+  # capped. The read list is deliberately unlimited: it is the member's
+  # history, ratings and notes included.
+  TBR_LIMIT = 20
+  validate :tbr_list_not_full, if: :want_to_read?
+
   # Scopes
   scope :want_to_read, -> { where(status: :want_to_read) }
   scope :currently_reading, -> { where(status: :currently_reading) }
@@ -24,6 +30,18 @@ class ReadingStatus < ApplicationRecord
     when :want_to_read then "blue"
     when :currently_reading then "yellow"
     when :read then "green"
+    end
+  end
+
+  private
+
+  def tbr_list_not_full
+    return unless borrower
+
+    others = borrower.reading_statuses.where(status: :want_to_read)
+    others = others.where.not(id: id) if persisted?
+    if others.count >= TBR_LIMIT
+      errors.add(:base, "The to-be-read list is full (max #{TBR_LIMIT}). Move a book to Read or remove one to add another.")
     end
   end
 end
