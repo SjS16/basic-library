@@ -1,5 +1,6 @@
 class ReadingStatusesController < ApplicationController
   before_action :set_borrower
+  before_action :require_owner_or_borrower
   before_action :set_reading_status, only: [ :update, :destroy ]
 
   # POST /borrowers/:borrower_id/reading_statuses
@@ -41,6 +42,12 @@ class ReadingStatusesController < ApplicationController
   end
 
   private
+
+  def require_owner_or_borrower
+    return if owner? || current_user&.borrower == @borrower
+
+    redirect_to root_path, alert: "You can only manage your own reading lists."
+  end
 
   def set_borrower
     @borrower = Borrower.find(params[:borrower_id])

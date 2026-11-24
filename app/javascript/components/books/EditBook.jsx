@@ -12,6 +12,7 @@ function EditBook() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showScanner, setShowScanner] = useState(false);
   const [scanError, setScanError] = useState(null);
+  const [saveError, setSaveError] = useState(null);
   const navigate = useNavigate();
   const { id } = useParams();
   const { searchResults, clearResults } = useOpenLibrarySearch(searchTerm);
@@ -72,17 +73,38 @@ function EditBook() {
     const method = book.id ? "PUT" : "POST";
     const url = book.id ? `/books/${book.id}.json` : "/books.json";
 
+    setSaveError(null);
+
     fetch(url, {
       method,
       headers: getAuthHeaders(),
       body: JSON.stringify({ book }),
     })
-      .then((res) => res.json())
+      .then(async (res) => {
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          const messages = Object.values(data).flat();
+          if (messages.some((m) => m.includes("already in the library"))) {
+            throw new Error(
+              `"${book.title}" by ${book.author} is already in your library. No duplicate was added.`
+            );
+          }
+          throw new Error(
+            Object.entries(data)
+              .flatMap(([field, errs]) => errs.map((e) => `${field} ${e}`))
+              .join(". ") || "Could not save the book."
+          );
+        }
+        return data;
+      })
       .then(() => {
         alert(`Book ${book.id ? "updated" : "created"} successfully!`);
         navigate("/books");
       })
-      .catch((err) => console.error("Error saving book:", err));
+      .catch((err) => {
+        console.error("Error saving book:", err);
+        setSaveError(err.message);
+      });
   };
 
   return (
@@ -93,6 +115,13 @@ function EditBook() {
       {scanError && (
         <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
           <p className="text-yellow-800 text-sm">{scanError}</p>
+        </div>
+      )}
+
+      {/* Save Error Message (including duplicates) */}
+      {saveError && (
+        <div className="mb-4 p-3 bg-amber-50 border border-amber-300 rounded-lg">
+          <p className="text-amber-800 text-sm font-medium">{saveError}</p>
         </div>
       )}
 

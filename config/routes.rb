@@ -1,4 +1,7 @@
 Rails.application.routes.draw do
+  resource :session
+  resource :registration, only: [ :new, :create ]
+  resources :passwords, param: :token
   resources :borrowers do
     member do
       post :checkout_book
