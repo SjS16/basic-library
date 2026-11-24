@@ -35,12 +35,24 @@ class Borrower < ApplicationRecord
     current_loans.where("due_date < ?", Time.current)
   end
 
-  # Calculate and update standing based on loan history
+  # How many books are overdue right now. Worked out live from
+  # due dates every time it is asked, so it is never stale the
+  # way the stored standing score can be between recalculations.
+  # This is the count behind the overdue warning that travels
+  # with the member's name.
+  def overdue_books_count
+    overdue_loans.count
+  end
+
+  # Calculate and update standing based on loan history.
+  # Books that are overdue right now count even before the member
+  # has ever returned anything: a first overdue book costs its
+  # points straight away rather than leaving a new member frozen
+  # at 100.
   def update_standing!
     return if loans.empty?
 
     total_loans = loans.where.not(returned_at: nil).count
-    return if total_loans.zero?
 
     # Count late returns (returned after due date)
     late_returns = loans.where("returned_at > due_date").count

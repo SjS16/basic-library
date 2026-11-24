@@ -67,4 +67,31 @@ class BorrowerTest < ActiveSupport::TestCase
     borrower.update_standing!
     assert borrower.standing < initial_standing
   end
+
+  test "a first overdue book drops standing even with no returns yet" do
+    borrower = Borrower.create!(name: "First Timer", standing: 100)
+    book = Book.create!(title: "Out Too Long", author: "Some Author", in_library: true, available: true)
+    Loan.create!(borrower: borrower, book: book, checked_out_at: 3.weeks.ago, due_date: 1.week.ago)
+    assert_equal 80, borrower.reload.standing
+  end
+
+  test "standing recovers partway when the overdue book comes back late" do
+    borrower = Borrower.create!(name: "Late Returner", standing: 100)
+    book = Book.create!(title: "Back Eventually", author: "Some Author", in_library: true, available: true)
+    loan = Loan.create!(borrower: borrower, book: book, checked_out_at: 3.weeks.ago, due_date: 1.week.ago)
+    assert_equal 80, borrower.reload.standing
+
+    loan.return_book!
+    assert_equal 90, borrower.reload.standing
+  end
+
+  test "moving a due date into the past recalculates standing" do
+    borrower = Borrower.create!(name: "Renewed", standing: 100)
+    book = Book.create!(title: "Fresh Loan", author: "Some Author", in_library: true, available: true)
+    loan = Loan.create!(borrower: borrower, book: book, checked_out_at: Time.current, due_date: 2.weeks.from_now)
+    assert_equal 100, borrower.reload.standing
+
+    loan.update!(due_date: 1.day.ago)
+    assert_equal 80, borrower.reload.standing
+  end
 end

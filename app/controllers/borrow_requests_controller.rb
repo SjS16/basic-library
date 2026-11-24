@@ -97,7 +97,7 @@ class BorrowRequestsController < ApplicationController
 
   def request_json(request)
     request.as_json(include: {
-      borrower: { only: [ :id, :name ] },
+      borrower: { only: [ :id, :name ], methods: [ :overdue_books_count ] },
       book: { only: [ :id, :title, :author, :available, :in_library ] }
     })
   end

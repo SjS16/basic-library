@@ -9,7 +9,10 @@ class Loan < ApplicationRecord
   before_validation :set_defaults, on: :create
   after_create :mark_book_unavailable
   after_save :update_book_availability, if: :saved_change_to_returned_at?
-  after_save :update_borrower_standing, if: :saved_change_to_returned_at?
+  # Standing follows the loan's facts, not just its return: a due
+  # date moving into the past makes the book overdue, and that
+  # should cost the member straight away.
+  after_save :update_borrower_standing, if: -> { saved_change_to_returned_at? || saved_change_to_due_date? }
 
   scope :active, -> { where(returned_at: nil) }
   scope :returned, -> { where.not(returned_at: nil) }

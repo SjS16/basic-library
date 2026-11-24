@@ -352,6 +352,11 @@ function RequestsPage() {
                       This book is currently checked out, so it can't be lent until it's back.
                     </p>
                   )}
+                  {isOwner && r.borrower?.overdue_books_count > 0 && (
+                    <p className="text-sm font-semibold text-red-700 mt-1">
+                      ⚠ {r.borrower.name} has {r.borrower.overdue_books_count} {r.borrower.overdue_books_count === 1 ? "book" : "books"} overdue right now.
+                    </p>
+                  )}
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
                   {isOwner ? (

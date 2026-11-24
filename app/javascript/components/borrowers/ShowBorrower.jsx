@@ -188,6 +188,11 @@ function ShowBorrower() {
                   <span className="text-xs sm:text-sm text-gray-600">
                     {borrower.standing_status}
                   </span>
+                  {borrower.overdue_books_count > 0 && (
+                    <span className="px-3 py-1.5 rounded-full text-sm font-bold bg-red-600 text-white inline-block">
+                      ⚠ {borrower.overdue_books_count} {borrower.overdue_books_count === 1 ? "book" : "books"} overdue
+                    </span>
+                  )}
                 </div>
               </div>
             </div>

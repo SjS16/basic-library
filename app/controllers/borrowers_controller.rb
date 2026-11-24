@@ -8,7 +8,7 @@ class BorrowersController < ApplicationController
     @borrowers = Borrower.all.order(standing: :desc)
     respond_to do |format|
       format.html
-      format.json { render json: @borrowers }
+      format.json { render json: @borrowers.as_json(methods: [ :overdue_books_count ]) }
     end
   end
 
@@ -27,7 +27,7 @@ class BorrowersController < ApplicationController
               methods: [ :recommended_by_name, :recommendation_note ]
             }
           },
-          methods: [ :standing_status, :standing_color ]
+          methods: [ :standing_status, :standing_color, :overdue_books_count ]
         )
       }
     end

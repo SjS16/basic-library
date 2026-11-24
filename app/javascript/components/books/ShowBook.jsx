@@ -190,6 +190,8 @@ function ShowBook() {
     setCheckoutBusy(false);
   };
 
+  const selectedMember = members.find((m) => m.id === Number(selectedMemberId));
+
   return (
     <div className="p-4 sm:p-6 bg-white rounded shadow max-w-6xl mx-auto">
       <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
@@ -407,6 +409,12 @@ function ShowBook() {
                       Check out
                     </button>
                   </div>
+
+                  {selectedMember?.overdue_books_count > 0 && (
+                    <p className="text-sm font-semibold text-red-700 mt-3">
+                      ⚠ {selectedMember.name} has {selectedMember.overdue_books_count} {selectedMember.overdue_books_count === 1 ? "book" : "books"} overdue right now. You can still lend to them.
+                    </p>
+                  )}
 
                   <div className="flex items-center gap-3 my-4">
                     <span className="flex-1 border-t" />

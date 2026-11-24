@@ -284,6 +284,11 @@ function BorrowersList() {
                     {borrower.email && (
                       <p className="text-xs sm:text-sm text-gray-600 mt-1 truncate">{borrower.email}</p>
                     )}
+                    {borrower.overdue_books_count > 0 && (
+                      <p className="text-xs sm:text-sm font-semibold text-red-700 mt-1">
+                        ⚠ {borrower.overdue_books_count} {borrower.overdue_books_count === 1 ? "book" : "books"} overdue
+                      </p>
+                    )}
                   </div>
                 </div>
 
