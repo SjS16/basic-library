@@ -18,6 +18,7 @@ function BooksList() {
   const [allBooks, setAllBooks] = useState([]);
   const [filteredBooks, setFilteredBooks] = useState([]);
   const [page, setPage] = useState(1);
+  const [manageOpen, setManageOpen] = useState(false);
 
   useEffect(() => {
     fetch("/books.json")
@@ -146,24 +147,43 @@ function BooksList() {
           </div>
           {isOwner && (
             <div className="flex flex-col sm:flex-row gap-2">
-              <button
-                className="px-4 sm:px-6 py-2 sm:py-3 bg-white border-2 border-amber-900 text-amber-900 rounded-lg hover:bg-amber-100 shadow transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base whitespace-nowrap font-medium"
-                onClick={() => navigate("/books/enrich")}
-              >
-                Fill Missing Details
-              </button>
-              <button
-                className="px-4 sm:px-6 py-2 sm:py-3 bg-white border-2 border-amber-900 text-amber-900 rounded-lg hover:bg-amber-100 shadow transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base whitespace-nowrap font-medium"
-                onClick={() => navigate("/books/import")}
-              >
-                Import CSV
-              </button>
-              <a
-                href="/books/export.csv"
-                className="px-4 sm:px-6 py-2 sm:py-3 bg-white border-2 border-amber-900 text-amber-900 rounded-lg hover:bg-amber-100 shadow transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base whitespace-nowrap font-medium"
-              >
-                Export Catalogue (CSV)
-              </a>
+              <div className="relative">
+                <button
+                  className="w-full px-4 sm:px-6 py-2 sm:py-3 bg-white border-2 border-amber-900 text-amber-900 rounded-lg hover:bg-amber-100 shadow transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base whitespace-nowrap font-medium"
+                  onClick={() => setManageOpen((open) => !open)}
+                >
+                  Manage Library
+                  <svg className={`w-4 h-4 transition-transform ${manageOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {manageOpen && (
+                  <>
+                    <div className="fixed inset-0 z-20" onClick={() => setManageOpen(false)} />
+                    <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-30 py-1">
+                      <button
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-amber-50"
+                        onClick={() => { setManageOpen(false); navigate("/books/enrich"); }}
+                      >
+                        Fill Missing Details
+                      </button>
+                      <button
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-amber-50"
+                        onClick={() => { setManageOpen(false); navigate("/books/import"); }}
+                      >
+                        Import CSV
+                      </button>
+                      <a
+                        href="/books/export.csv"
+                        className="block w-full px-4 py-2 text-sm text-gray-700 hover:bg-amber-50"
+                        onClick={() => setManageOpen(false)}
+                      >
+                        Export Catalogue (CSV)
+                      </a>
+                    </div>
+                  </>
+                )}
+              </div>
               <button
               className="px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-amber-800 to-amber-900 text-amber-50 rounded-lg hover:from-amber-900 hover:to-amber-950 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base whitespace-nowrap"
               onClick={() => navigate("/books/new")}
