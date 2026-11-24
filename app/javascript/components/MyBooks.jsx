@@ -4,6 +4,7 @@ import { useCurrentUser } from "../hooks/useCurrentUser";
 import ReadingList from "./borrowers/ReadingList";
 import RecommendedInbox from "./recommendations/RecommendedInbox";
 import RecommendBookForm from "./recommendations/RecommendBookForm";
+import SentRecommendations from "./recommendations/SentRecommendations";
 
 // A member's personal page: what they have checked out, then their
 // reading lists. Shelves in the order a member thinks about them.
@@ -134,6 +135,9 @@ function MyBooks() {
         </p>
         <RecommendBookForm />
       </div>
+
+      {/* What you have recommended, and what came of it. */}
+      <SentRecommendations />
     </div>
   );
 }

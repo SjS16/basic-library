@@ -3,18 +3,27 @@ class RecommendationsController < ApplicationController
   before_action :require_recipient, only: [ :accept, :decline ]
 
   # GET /recommendations — HTML loads the React app; JSON returns
-  # the signed-in member's pending recommendations.
+  # the signed-in member's pending recommendations (received) and
+  # everything they have sent, with its outcome.
   def index
     respond_to do |format|
       format.html { render template: "home/index" }
       format.json do
         borrower = current_user&.borrower
-        recommendations = if borrower
-                            borrower.recommendations_received.pending.includes(:book, :recommender).recent_first
+        received = if borrower
+                     borrower.recommendations_received.pending.includes(:book, :recommender).recent_first
         else
-                            Recommendation.none
+                     Recommendation.none
         end
-        render json: { recommendations: recommendations.map { |r| recommendation_json(r) } }
+        sent = if borrower
+                 borrower.recommendations_sent.includes(:book, :recipient).recent_first
+        else
+                 Recommendation.none
+        end
+        render json: {
+          recommendations: received.map { |r| recommendation_json(r) },
+          sent: sent.map { |r| recommendation_json(r) }
+        }
       end
     end
   end
@@ -85,12 +94,14 @@ class RecommendationsController < ApplicationController
     entry = @recommendation.recipient.reading_statuses.find_or_initialize_by(book: @recommendation.book)
     if entry.persisted?
       @recommendation.update!(status: :accepted)
+      Notification.recommendation_accepted!(@recommendation)
       return render json: recommendation_json(@recommendation).merge(outcome: "already_on_list")
     end
 
     entry.status = :want_to_read
     if entry.save
       @recommendation.update!(status: :accepted)
+      Notification.recommendation_accepted!(@recommendation)
       render json: recommendation_json(@recommendation).merge(outcome: "added")
     else
       render json: { error: entry.errors.full_messages.to_sentence }, status: :unprocessable_entity

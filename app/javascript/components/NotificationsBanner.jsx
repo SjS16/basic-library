@@ -94,6 +94,18 @@ function NotificationsBanner() {
                 </Link>{" "}
                 to you.
               </>
+            ) : n.kind === "recommendation_accepted" && n.borrower && n.book ? (
+              <>
+                ✅{" "}
+                <Link to={`/borrowers/${n.borrower.id}`} className="font-semibold underline hover:no-underline">
+                  {n.borrower.name}
+                </Link>{" "}
+                added{" "}
+                <Link to={`/books/${n.book.id}`} className="font-semibold underline hover:no-underline">
+                  {n.book.title}
+                </Link>{" "}
+                to their to-be-read list.
+              </>
             ) : (
               "You have a new notification."
             )}

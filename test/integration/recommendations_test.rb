@@ -104,4 +104,38 @@ class RecommendationsTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert recommendation.reload.declined?
   end
+
+  test "accepting notifies the recommender, and the sent list shows the outcome" do
+    recommendation = Recommendation.create!(
+      recommender: borrowers(:good_borrower), recipient: @recipient,
+      book: Book.create!(title: "Good News Travels", author: "Some Author", in_library: false, available: false)
+    )
+
+    sign_in_as(@recipient_user)
+    assert_difference -> { Notification.where(user: @recommender_user, kind: "recommendation_accepted").count }, 1 do
+      post accept_recommendation_path(recommendation, format: :json), as: :json
+    end
+    assert_response :success
+
+    sign_in_as(@recommender_user)
+    get recommendations_path(format: :json), as: :json
+    assert_response :success
+    sent = JSON.parse(response.body)["sent"]
+    mine = sent.find { |row| row["id"] == recommendation.id }
+    assert_equal "accepted", mine["status"]
+    assert_equal @recipient.name, mine["recipient"]["name"]
+  end
+
+  test "passing on a recommendation does not notify the recommender" do
+    recommendation = Recommendation.create!(
+      recommender: borrowers(:good_borrower), recipient: @recipient,
+      book: Book.create!(title: "Quiet No", author: "Some Author", in_library: false, available: false)
+    )
+
+    sign_in_as(@recipient_user)
+    assert_no_difference -> { Notification.where(user: @recommender_user).count } do
+      post decline_recommendation_path(recommendation, format: :json), as: :json
+    end
+    assert_response :success
+  end
 end

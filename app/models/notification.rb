@@ -12,8 +12,12 @@ class Notification < ApplicationRecord
   # the member who asked (book and borrower set). book_recommended:
   # a member recommended a book; sent to the member it was
   # recommended to (book set, borrower is the recommender).
+  # recommendation_accepted: a recommendation was taken up; sent
+  # to the recommender (book set, borrower is the recipient who
+  # accepted). A pass is deliberately never notified.
   KINDS = %w[ wishlist_book_arrived member_joined borrow_request_received
-              borrow_request_approved borrow_request_declined book_recommended ].freeze
+              borrow_request_approved borrow_request_declined book_recommended
+              recommendation_accepted ].freeze
   validates :kind, inclusion: { in: KINDS }
 
   scope :recent_first, -> { order(created_at: :desc) }
@@ -57,5 +61,16 @@ class Notification < ApplicationRecord
     return unless user
 
     create!(user: user, kind: "book_recommended", book: recommendation.book, borrower: recommendation.recommender)
+  end
+
+  # Tells the recommender that their recommendation was taken
+  # up. There is no matching helper for a pass, on purpose: a
+  # pass sits in the sender's sent list for when they go
+  # looking, but nobody is pinged that their taste was declined.
+  def self.recommendation_accepted!(recommendation)
+    user = User.find_by(borrower_id: recommendation.recommender_id)
+    return unless user
+
+    create!(user: user, kind: "recommendation_accepted", book: recommendation.book, borrower: recommendation.recipient)
   end
 end
