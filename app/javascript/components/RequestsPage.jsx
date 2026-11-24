@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useCurrentUser } from "../hooks/useCurrentUser";
 import { getAuthHeaders } from "../utils/csrf";
+import { useOpenLibrarySearch } from "../hooks/useOpenLibrarySearch";
+import { fetchBookDetails } from "../utils/openLibraryApi";
+import SearchResults from "./books/SearchResults";
 
 function RequestsPage() {
   const currentUser = useCurrentUser();
@@ -13,6 +16,14 @@ function RequestsPage() {
   const [errors, setErrors] = useState({});
   const [joinError, setJoinError] = useState("");
   const [joinBusy, setJoinBusy] = useState(false);
+  const [reqTitle, setReqTitle] = useState("");
+  const [reqAuthor, setReqAuthor] = useState("");
+  const [reqNotice, setReqNotice] = useState(null);
+  const [reqError, setReqError] = useState("");
+  const [reqBusy, setReqBusy] = useState(false);
+  const [reqSearchTerm, setReqSearchTerm] = useState("");
+  const { searchResults: reqResults, clearResults: clearReqResults } = useOpenLibrarySearch(reqSearchTerm);
+  const [reqPicked, setReqPicked] = useState(null);
 
   const fetchAll = () => {
     Promise.all([
@@ -80,6 +91,81 @@ function RequestsPage() {
       setJoinError("Could not send the request.");
     }
     setJoinBusy(false);
+    fetchAll();
+  };
+
+  // The same Open Library search the other add forms use: picking
+  // a suggestion fills the author and carries the ISBN, so the
+  // server can match the request to the library's copy by ISBN.
+  const handleReqTitleChange = (value) => {
+    setReqTitle(value);
+    setReqSearchTerm(value);
+  };
+
+  const handleReqSelect = async (result) => {
+    const details = await fetchBookDetails(result);
+    setReqTitle(details.title || "");
+    setReqAuthor(details.author || "");
+    setReqPicked({
+      title: details.title || "",
+      author: details.author || "",
+      isbn: details.isbn || "",
+    });
+    clearReqResults();
+    setReqSearchTerm("");
+  };
+
+  const handleReqDismiss = () => {
+    clearReqResults();
+    setReqSearchTerm("");
+  };
+
+  const submitTitleRequest = async (e) => {
+    e.preventDefault();
+    setReqError("");
+    setReqNotice(null);
+    setReqBusy(true);
+    try {
+      const res = await fetch(`/borrowers/${currentUser.borrower_id}/title_requests.json`, {
+        method: "POST",
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          book: {
+            title: reqTitle,
+            author: reqAuthor,
+            ...(reqPicked && reqPicked.title === reqTitle && reqPicked.author === reqAuthor
+              ? { isbn: reqPicked.isbn }
+              : {}),
+          },
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setReqError(data.error || "Something went wrong.");
+      } else if (data.outcome === "requested") {
+        setReqNotice({
+          kind: "found",
+          text: `Requested: the library has "${data.book.title}" by ${data.book.author}. Your request is waiting for the owner.`,
+        });
+        setReqTitle("");
+        setReqAuthor("");
+      } else if (data.outcome === "wishlisted") {
+        setReqNotice({
+          kind: "wish",
+          text: `"${data.book.title}" isn't in the library yet, so it's on your Want to Read list as a wish. If the owner adds a copy, your entry will point at it.`,
+        });
+        setReqTitle("");
+        setReqAuthor("");
+      } else {
+        setReqNotice({
+          kind: "wish",
+          text: `"${data.book.title}" is already on your reading list.`,
+        });
+      }
+    } catch (err) {
+      setReqError("Something went wrong.");
+    }
+    setReqBusy(false);
     fetchAll();
   };
 
@@ -239,7 +325,7 @@ function RequestsPage() {
         <p className="text-gray-500 bg-white rounded shadow p-4 sm:p-6 mb-6 sm:mb-8">
           {isOwner
             ? "No borrow requests waiting. You're all caught up."
-            : "Nothing waiting. Find a book in the library and choose Request to Borrow."}
+            : "Nothing waiting. Use the form below, or find a book in the library and choose Request to Borrow."}
         </p>
       ) : (
         <div className="space-y-3 sm:space-y-4 mb-6 sm:mb-8">
@@ -323,6 +409,65 @@ function RequestsPage() {
             ))}
           </div>
         </>
+      )}
+
+      {isMember && !isOwner && (
+        <div className="bg-white rounded shadow p-4 sm:p-6 mt-6 sm:mt-8">
+          <h2 className="text-xl sm:text-2xl font-bold mb-2">Request a book by title</h2>
+          <p className="text-sm text-gray-600 mb-4">
+            Know exactly what you want? Ask for it here. If the library has it, the request
+            goes straight to the owner. If nobody has it yet, it lands on your Want to Read
+            list as a wish instead.
+          </p>
+          {reqNotice && (
+            <div
+              className={`border rounded-lg p-3 sm:p-4 mb-4 ${
+                reqNotice.kind === "found"
+                  ? "bg-green-50 border-green-300 text-green-900"
+                  : "bg-amber-50 border-amber-300 text-amber-900"
+              }`}
+            >
+              <p className="text-sm font-medium">{reqNotice.text}</p>
+            </div>
+          )}
+          <form onSubmit={submitTitleRequest} className="space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="relative">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
+                <input
+                  type="text"
+                  value={reqTitle}
+                  onChange={(e) => handleReqTitleChange(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:border-transparent"
+                  placeholder="Start typing to search Open Library"
+                />
+                <div className="absolute left-0 right-0 top-full z-30 mt-1">
+                  <SearchResults results={reqResults} onSelect={handleReqSelect} onDismiss={handleReqDismiss} />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Author *</label>
+                <input
+                  type="text"
+                  value={reqAuthor}
+                  onChange={(e) => setReqAuthor(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:border-transparent"
+                  placeholder="Author"
+                />
+              </div>
+            </div>
+            {reqError && <p className="text-sm text-red-700">{reqError}</p>}
+            <button
+              type="submit"
+              disabled={reqBusy}
+              className="px-4 py-2 bg-amber-800 text-amber-50 rounded-lg hover:bg-amber-900 text-sm font-medium disabled:opacity-50"
+            >
+              {reqBusy ? "Asking…" : "Request this book"}
+            </button>
+          </form>
+        </div>
       )}
     </div>
   );

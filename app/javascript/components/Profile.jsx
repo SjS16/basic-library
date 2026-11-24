@@ -67,6 +67,24 @@ function Profile() {
     }
   };
 
+  const becomeMember = async () => {
+    setJoinError("");
+    try {
+      const res = await fetch("/profile/become_member.json", {
+        method: "POST",
+        headers: getAuthHeaders(),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setJoinError(data.error || "Could not add you as a member.");
+        return;
+      }
+      window.location.reload();
+    } catch (err) {
+      setJoinError("Could not add you as a member.");
+    }
+  };
+
   const pendingInvite = joinInvites.find((i) => i.status === "pending");
   const myJoinRequest = joinRequests[0];
 
@@ -152,8 +170,8 @@ function Profile() {
                 <>
                   <dd className="text-base font-medium mt-0.5">{borrower.name} · Standing {borrower.standing}/100</dd>
                   <dd className="mt-1 text-sm">
-                    <Link to={`/borrowers/${borrower.id}`} className="text-amber-800 underline hover:no-underline">
-                      View my loans and reading list
+                    <Link to="/my-books" className="text-amber-800 underline hover:no-underline">
+                      View my books
                     </Link>
                   </dd>
                 </>
@@ -170,7 +188,19 @@ function Profile() {
       {currentUser && !currentUser.borrower_id && (
         <div className="bg-white rounded shadow p-6 mb-6">
           <h2 className="text-2xl font-bold mb-4">Library membership</h2>
-          {pendingInvite ? (
+          {currentUser.owner ? (
+            <>
+              <p className="text-gray-700">
+                You're the owner of this library, and your account doesn't have a member
+                record, which is why you don't have a My Books page or personal reading
+                lists. Owners aren't made members automatically. If you'd like the member
+                side too, add yourself.
+              </p>
+              <button onClick={becomeMember} className="mt-4 px-4 py-2 bg-amber-800 text-amber-50 rounded hover:bg-amber-900 font-medium">
+                Add myself as a member
+              </button>
+            </>
+          ) : pendingInvite ? (
             <>
               <p className="font-medium">You've been invited to join this library.</p>
               <p className="text-sm text-gray-600 mt-1">
@@ -215,7 +245,11 @@ function Profile() {
                 return (
                   <li key={loan.id} className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="font-medium truncate">{loan.book.title}</p>
+                      <p className="font-medium truncate">
+                        <Link to={`/books/${loan.book.id}`} className="hover:text-amber-800 hover:underline">
+                          {loan.book.title}
+                        </Link>
+                      </p>
                       <p className="text-sm text-gray-600 truncate">{loan.book.author}</p>
                     </div>
                     <span className={`px-2 py-1 rounded-full text-xs font-semibold border flex-shrink-0 ${overdue ? "bg-red-100 text-red-900 border-red-900" : "bg-amber-100 text-amber-900 border-amber-900"}`}>

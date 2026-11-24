@@ -124,11 +124,18 @@ function BooksList() {
       <div className="mb-6 sm:mb-8">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
           <div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">My Library</h1>
-            <p className="text-sm sm:text-base text-gray-600">Manage and explore your book collection</p>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">{isOwner ? "My Library" : "Available Books"}</h1>
+            <p className="text-sm sm:text-base text-gray-600">{isOwner ? "Manage and explore your book collection" : "Every book on the shelves, out or in. Request anything you'd like to borrow."}</p>
           </div>
           {isOwner && (
-            <button
+            <div className="flex flex-col sm:flex-row gap-2">
+              <a
+                href="/books/export.csv"
+                className="px-4 sm:px-6 py-2 sm:py-3 bg-white border-2 border-amber-900 text-amber-900 rounded-lg hover:bg-amber-100 shadow transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base whitespace-nowrap font-medium"
+              >
+                Export Catalogue (CSV)
+              </a>
+              <button
               className="px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-amber-800 to-amber-900 text-amber-50 rounded-lg hover:from-amber-900 hover:to-amber-950 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base whitespace-nowrap"
               onClick={() => navigate("/books/new")}
             >
@@ -137,7 +144,8 @@ function BooksList() {
               </svg>
               <span className="hidden sm:inline">Add New Book</span>
               <span className="sm:hidden">Add Book</span>
-            </button>
+              </button>
+            </div>
           )}
         </div>
 

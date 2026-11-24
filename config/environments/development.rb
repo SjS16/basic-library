@@ -31,8 +31,10 @@ Rails.application.configure do
   # Store uploaded files on the local file system (see config/storage.yml for options).
   config.active_storage.service = :local
 
-  # Don't care if the mailer can't send.
-  config.action_mailer.raise_delivery_errors = false
+  # Do care if the mailer can't send: until a real mail service is
+  # wired up, a silently swallowed failure looks exactly like a
+  # sent email, which is worse than an honest error.
+  config.action_mailer.raise_delivery_errors = true
 
   # Make template changes take effect immediately.
   config.action_mailer.perform_caching = false

@@ -8,7 +8,11 @@ class WishlistBooksController < ApplicationController
   # that title + author; otherwise creates it flagged in_library: false.
   def create
     attrs = wishlist_book_params
-    book = Book.where("lower(title) = :title AND lower(author) = :author",
+    book = nil
+    if attrs[:isbn].present?
+      book = Book.where(isbn: attrs[:isbn].to_s.strip).first
+    end
+    book ||= Book.where("lower(title) = :title AND lower(author) = :author",
                       title: attrs[:title].to_s.strip.downcase,
                       author: attrs[:author].to_s.strip.downcase).first
     book ||= Book.new(attrs.merge(in_library: false, available: false))
@@ -21,7 +25,8 @@ class WishlistBooksController < ApplicationController
       return render json: { error: "\"#{book.title}\" is already on this reading list." }, status: :unprocessable_entity
     end
 
-    reading_status = @borrower.reading_statuses.build(book: book, status: :want_to_read)
+    requested_status = ReadingStatus.statuses.key?(params[:status].to_s) ? params[:status] : :want_to_read
+    reading_status = @borrower.reading_statuses.build(book: book, status: requested_status)
 
     if reading_status.save
       render json: reading_status.as_json(include: :book), status: :created
@@ -45,6 +50,6 @@ class WishlistBooksController < ApplicationController
   end
 
   def wishlist_book_params
-    params.require(:book).permit(:title, :author, :genre, :published_year, :description)
+    params.require(:book).permit(:title, :author, :genre, :published_year, :description, :isbn, :cover_url)
   end
 end

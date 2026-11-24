@@ -1,0 +1,8 @@
+Hello,
+
+<%= @borrower.name %> would like to borrow "<%= @book.title %>" by <%= @book.author %>.
+
+You can approve or decline it on the Requests page:
+<%= borrow_requests_url %>
+
+Approving the request checks the book out to them right away.

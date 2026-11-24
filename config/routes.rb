@@ -4,6 +4,7 @@ Rails.application.routes.draw do
   resources :passwords, param: :token
   get "me", to: "me#show"
   resource :profile, only: [ :show, :update ]
+  post "profile/become_member", to: "profiles#become_member"
   resources :borrowers do
     collection do
       get :name_check
@@ -11,6 +12,7 @@ Rails.application.routes.draw do
     member do
       post :checkout_book
       post :return_book
+      get :reading_list_export
     end
     resources :reading_statuses, only: [ :create, :update, :destroy ]
   end
@@ -24,6 +26,7 @@ Rails.application.routes.draw do
   end
 
   post "borrowers/:borrower_id/wishlist_books", to: "wishlist_books#create"
+  post "borrowers/:borrower_id/title_requests", to: "title_requests#create"
 
   resources :membership_requests, only: [ :index, :create ] do
     member do
@@ -43,8 +46,12 @@ Rails.application.routes.draw do
   post "invite_link/regenerate", to: "invite_links#regenerate"
   post "invite_link/accept", to: "invite_links#accept"
 
-  resources :loans, only: [ :index, :show, :create, :update ]
+  get "loans/overdue", to: "loans#overdue"
+  post "loans/:id/bother", to: "loans#bother"
+  patch "loans/:id", to: "loans#update"
+  post "internal/due_reminders", to: "reminders#run"
 
+  get "books/export", to: "books#export"
   resources :books do
     collection do
       get :open_library

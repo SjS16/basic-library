@@ -11,6 +11,7 @@ import ShowBorrower from "./components/borrowers/ShowBorrower";
 import EditBorrower from "./components/borrowers/EditBorrower";
 import Profile from "./components/Profile";
 import RequestsPage from "./components/RequestsPage";
+import MyBooks from "./components/MyBooks";
 import { useCurrentUser } from "./hooks/useCurrentUser";
 
 // Renders children only for the library owner; everyone else goes home.
@@ -21,13 +22,23 @@ function OwnerOnly({ children }) {
   return currentUser.owner ? children : <Navigate to="/" replace />;
 }
 
-// A borrower page is visible to the owner and to the borrower it belongs to.
+// A member's own borrower page is their My Books page now; the
+// /borrowers/:id view is the owner's lens on a member.
 function BorrowerPage({ children }) {
   const currentUser = useCurrentUser();
   const { id } = useParams();
   if (!currentUser) return null;
-  const allowed = currentUser.owner || currentUser.borrower_id === Number(id);
-  return allowed ? children : <Navigate to="/" replace />;
+  if (currentUser.borrower_id === Number(id)) {
+    return <Navigate to="/my-books" replace />;
+  }
+  return currentUser.owner ? children : <Navigate to="/" replace />;
+}
+
+// My Books is for members (accounts linked to a member record).
+function MemberOnly({ children }) {
+  const currentUser = useCurrentUser();
+  if (!currentUser) return null;
+  return currentUser.borrower_id ? children : <Navigate to="/" replace />;
 }
 
 function App() {
@@ -49,6 +60,7 @@ function App() {
 
           <Route path="/profile" element={<Profile />} />
           <Route path="/requests" element={<RequestsPage />} />
+          <Route path="/my-books" element={<MemberOnly><MyBooks /></MemberOnly>} />
         </Routes>
       </main>
     </div>

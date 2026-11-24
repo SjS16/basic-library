@@ -1,0 +1,8 @@
+Hello <%= @borrower.name %>,
+
+A little nudge from the library: "<%= @book.title %>" by <%= @book.author %> was due back on <%= @loan.due_date.to_date.to_fs(:long) %>, so it is now <%= @loan.days_overdue %> <%= "day".pluralize(@loan.days_overdue) %> overdue.
+
+No harm done; just bring it back when you can, or let the librarian know if you need more time.
+
+You can see everything you have out here:
+<%= root_url %>

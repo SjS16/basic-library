@@ -1,0 +1,8 @@
+Hello,
+
+<%= @user.name.presence || @user.email_address %> (<%= @user.email_address %>) has asked to join your library.
+
+You can approve or decline it on the Requests page:
+<%= membership_requests_url %>
+
+Approving gives them a member record so they can request books.

@@ -23,6 +23,7 @@ class MembershipRequestsController < ApplicationController
     @membership_request = current_user.membership_requests.build
 
     if @membership_request.save
+      deliver_safely LibraryMailer.membership_request_received(@membership_request)
       render json: request_json(@membership_request), status: :created
     else
       render json: { error: @membership_request.errors.full_messages.to_sentence }, status: :unprocessable_entity

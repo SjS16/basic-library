@@ -8,6 +8,7 @@ function SearchResults({ results, onSelect, onDismiss }) {
       <div className="p-2 bg-gray-50 border-b flex justify-between items-center">
         <span className="text-sm text-gray-600">Select from Open Library or continue typing</span>
         <button
+          type="button"
           onClick={onDismiss}
           className="text-gray-500 hover:text-gray-700 font-bold"
           title="Close search results"

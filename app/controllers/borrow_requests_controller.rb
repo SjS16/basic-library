@@ -31,6 +31,7 @@ class BorrowRequestsController < ApplicationController
     @borrow_request = borrower.borrow_requests.build(borrow_request_params)
 
     if @borrow_request.save
+      deliver_safely LibraryMailer.borrow_request_received(@borrow_request)
       render json: request_json(@borrow_request), status: :created
     else
       render json: { error: @borrow_request.errors.full_messages.to_sentence }, status: :unprocessable_entity

@@ -1,1 +1,45 @@
 @import "tailwindcss";
+
+/* Royal & gilt theme: keep in step with
+   app/assets/stylesheets/application.css. */
+@theme {
+  --color-amber-50: #eef4fb;
+  --color-amber-100: #dfeaf6;
+  --color-amber-200: #c3d7ee;
+  --color-amber-300: #9dbede;
+  --color-amber-400: #d9a83e;
+  --color-amber-500: #bf8f2a;
+  --color-amber-600: #2c5590;
+  --color-amber-700: #26487a;
+  --color-amber-800: #1f3a63;
+  --color-amber-900: #1a2f52;
+  --color-amber-950: #101f3a;
+
+  --color-blue-50: #fbf7ea;
+  --color-blue-100: #f6ecc9;
+  --color-blue-200: #eed894;
+  --color-blue-300: #e4bf5f;
+  --color-blue-400: #d9a83e;
+  --color-blue-500: #c9972f;
+  --color-blue-600: #a97b21;
+  --color-blue-700: #8a611c;
+  --color-blue-800: #6f4e1a;
+  --color-blue-900: #5c4118;
+  --color-blue-950: #37260c;
+
+  --font-serif: "Palatino", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+}
+
+/* Antique wallpaper: a faint gilt dot lattice over the app shell. */
+#react-root > div {
+  background-image:
+    radial-gradient(rgba(191, 143, 42, 0.13) 1.2px, transparent 1.3px),
+    radial-gradient(rgba(31, 58, 99, 0.05) 1.2px, transparent 1.3px);
+  background-size: 26px 26px, 26px 26px;
+  background-position: 0 0, 13px 13px;
+}
+
+::selection {
+  background: #d9a83e;
+  color: #101f3a;
+}

@@ -10,6 +10,9 @@ class Book < ApplicationRecord
 
   validates :title, presence: true
   validate :no_duplicate_title_and_author
+  # An ISBN identifies one edition; two records sharing one would
+  # be the same book twice. Blank is fine (older records have none).
+  validates :isbn, uniqueness: true, allow_blank: true
 
   # Get current loan (if book is checked out)
   def current_loan

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import { getAuthHeaders } from "../../utils/csrf";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
 import ReadingList from "./ReadingList";
@@ -8,9 +8,10 @@ function ShowBorrower() {
   const [borrower, setBorrower] = useState(null);
   const [currentLoans, setCurrentLoans] = useState([]);
   const [readingStatuses, setReadingStatuses] = useState([]);
-  const [availableBooks, setAvailableBooks] = useState([]);
   const [allBooks, setAllBooks] = useState([]);
-  const [selectedBookId, setSelectedBookId] = useState("");
+  const [dueEdits, setDueEdits] = useState({});
+  const [nudgedIds, setNudgedIds] = useState([]);
+  const [loanMsg, setLoanMsg] = useState({});
   const navigate = useNavigate();
   const { id } = useParams();
   const currentUser = useCurrentUser();
@@ -39,26 +40,9 @@ function ShowBorrower() {
       .then((res) => res.json())
       .then((data) => {
         setAllBooks(data);
-        setAvailableBooks(data.filter((book) => book.available));
       })
       .catch((err) => console.error("Error fetching books:", err));
   }, [id]);
-
-  const handleCheckout = () => {
-    if (!selectedBookId) return;
-
-    fetch(`/borrowers/${id}/checkout_book.json`, {
-      method: "POST",
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ book_id: selectedBookId }),
-    })
-      .then((res) => res.json())
-      .then(() => {
-        // Refresh data
-        window.location.reload();
-      })
-      .catch((err) => console.error("Error checking out book:", err));
-  };
 
   const handleReturn = (bookId) => {
     fetch(`/borrowers/${id}/return_book.json`, {
@@ -87,6 +71,39 @@ function ShowBorrower() {
       .catch((err) => console.error("Error lending book:", err));
   };
 
+  const handleDueSave = (loan) => {
+    const value = dueEdits[loan.id];
+    if (!value) return;
+    fetch(`/loans/${loan.id}.json`, {
+      method: "PATCH",
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ loan: { due_date: value } }),
+    })
+      .then(async (res) => {
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || "Could not update the due date.");
+        window.location.reload();
+      })
+      .catch((err) =>
+        setLoanMsg((prev) => ({ ...prev, [loan.id]: err.message }))
+      );
+  };
+
+  const handleNudge = (loan) => {
+    fetch(`/loans/${loan.id}/bother.json`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+    })
+      .then(async (res) => {
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || "The nudge could not be sent.");
+        setNudgedIds((prev) => [...prev, loan.id]);
+      })
+      .catch((err) =>
+        setLoanMsg((prev) => ({ ...prev, [loan.id]: err.message }))
+      );
+  };
+
   if (!borrower) {
     return <div className="text-center p-12">Loading...</div>;
   }
@@ -110,8 +127,6 @@ function ShowBorrower() {
 
   const color = getStandingColor();
   const classes = colorClasses[color];
-
-  const canCheckout = borrower.standing >= 50 && currentLoans.length < 5;
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6">
@@ -156,7 +171,7 @@ function ShowBorrower() {
         </div>
       </div>
 
-      <div className={`grid grid-cols-1 ${isOwner ? "lg:grid-cols-2" : ""} gap-4 sm:gap-6`}>
+      <div className="grid grid-cols-1 gap-4 sm:gap-6">
         {/* Current Loans */}
         <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6">
           <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">
@@ -178,7 +193,11 @@ function ShowBorrower() {
                   >
                     <div className="flex justify-between items-start mb-2 gap-2">
                       <div className="min-w-0 flex-1">
-                        <h3 className="text-sm sm:text-base font-bold text-gray-900 truncate">{loan.book.title}</h3>
+                        <h3 className="text-sm sm:text-base font-bold text-gray-900 truncate">
+                          <Link to={`/books/${loan.book.id}`} className="hover:text-amber-800 hover:underline">
+                            {loan.book.title}
+                          </Link>
+                        </h3>
                         <p className="text-xs sm:text-sm text-gray-600 truncate">{loan.book.author}</p>
                       </div>
                       {isOverdue && (
@@ -191,12 +210,48 @@ function ShowBorrower() {
                       Due: {new Date(loan.due_date).toLocaleDateString()}
                     </p>
                     {isOwner && (
-                      <button
-                        onClick={() => handleReturn(loan.book.id)}
-                        className="w-full px-3 py-2 bg-amber-700 text-amber-50 rounded hover:bg-amber-800 transition-colors text-xs sm:text-sm font-medium"
-                      >
-                        Return Book
-                      </button>
+                      <div className="space-y-2">
+                        <div className="flex flex-col sm:flex-row gap-2">
+                          <button
+                            onClick={() => handleReturn(loan.book.id)}
+                            className="flex-1 px-3 py-2 bg-amber-700 text-amber-50 rounded hover:bg-amber-800 transition-colors text-xs sm:text-sm font-medium"
+                          >
+                            Return Book
+                          </button>
+                          {isOverdue &&
+                            (nudgedIds.includes(loan.id) ? (
+                              <span className="flex-1 px-3 py-2 text-center text-xs sm:text-sm font-semibold text-green-700">
+                                Nudge sent ✓
+                              </span>
+                            ) : (
+                              <button
+                                onClick={() => handleNudge(loan)}
+                                className="flex-1 px-3 py-2 bg-red-800 text-white rounded hover:bg-red-900 transition-colors text-xs sm:text-sm font-medium"
+                              >
+                                Send nudge
+                              </button>
+                            ))}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <label className="text-xs text-gray-500 whitespace-nowrap">Due date:</label>
+                          <input
+                            type="date"
+                            value={dueEdits[loan.id] ?? loan.due_date.slice(0, 10)}
+                            onChange={(e) => setDueEdits((prev) => ({ ...prev, [loan.id]: e.target.value }))}
+                            className="flex-1 px-2 py-1.5 text-xs sm:text-sm border border-gray-300 rounded focus:ring-2 focus:ring-amber-600 focus:border-transparent"
+                          />
+                          <button
+                            onClick={() => handleDueSave(loan)}
+                            disabled={!dueEdits[loan.id] || dueEdits[loan.id] === loan.due_date.slice(0, 10)}
+                            className="px-3 py-1.5 text-xs sm:text-sm bg-white border border-amber-900 text-amber-900 rounded hover:bg-amber-100 font-medium disabled:opacity-40"
+                          >
+                            Save
+                          </button>
+                        </div>
+                        {loanMsg[loan.id] && (
+                          <p className="text-xs text-red-700">{loanMsg[loan.id]}</p>
+                        )}
+                      </div>
                     )}
                   </div>
                 );
@@ -205,51 +260,9 @@ function ShowBorrower() {
           )}
         </div>
 
-        {/* Checkout New Book (owner only) */}
-        {isOwner && (
-        <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6">
-          <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">Checkout Book</h2>
-
-          {!canCheckout ? (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 sm:p-4">
-              <p className="text-xs sm:text-sm text-yellow-800 font-medium">
-                {borrower.standing < 50
-                  ? "Standing too low (minimum 50 required)"
-                  : "Maximum books checked out (5/5)"}
-              </p>
-            </div>
-          ) : availableBooks.length === 0 ? (
-            <p className="text-sm sm:text-base text-gray-500 text-center py-6 sm:py-8">No books available</p>
-          ) : (
-            <>
-              <select
-                value={selectedBookId}
-                onChange={(e) => setSelectedBookId(e.target.value)}
-                className="w-full px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-300 rounded-lg mb-3 sm:mb-4 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="">Select a book...</option>
-                {availableBooks.map((book) => (
-                  <option key={book.id} value={book.id}>
-                    {book.title} - {book.author}
-                  </option>
-                ))}
-              </select>
-
-              <button
-                onClick={handleCheckout}
-                disabled={!selectedBookId}
-                className="w-full px-4 py-2 sm:py-3 text-sm sm:text-base bg-amber-800 text-amber-50 rounded-lg hover:bg-amber-900 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-medium"
-              >
-                Checkout Selected Book
-              </button>
-
-              <p className="text-xs sm:text-sm text-gray-500 mt-2 sm:mt-3">
-                Default due date: 2 weeks from checkout
-              </p>
-            </>
-          )}
-        </div>
-        )}
+        {/* Checkout happens where the book is: on its own page, from
+            the Lend button on this member's to-be-read list, or by
+            approving their request. No checkout panel here. */}
       </div>
 
       {/* Reading List Section */}

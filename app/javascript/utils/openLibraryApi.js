@@ -17,6 +17,8 @@ export async function fetchBookDetails(result) {
     console.error("Description fetch error:", err);
   }
 
+  const isbn = (result.isbn || []).find((i) => i.length === 13) || (result.isbn || [])[0] || "";
+
   return {
     title: result.title,
     author: result.author_name?.join(", ") || "",
@@ -24,6 +26,7 @@ export async function fetchBookDetails(result) {
     description: description || "",
     cover_url: coverUrl,
     genre: result.subject?.[0] || "",
+    isbn,
   };
 }
 
@@ -68,6 +71,7 @@ export async function fetchBookByISBN(isbn) {
       description: description,
       cover_url: coverUrl,
       genre: genre,
+      isbn: cleanISBN,
     };
   } catch (error) {
     console.error("ISBN lookup error:", error);

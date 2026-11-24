@@ -1,5 +1,5 @@
 class BorrowersController < ApplicationController
-  before_action :set_borrower, only: [ :show, :edit, :update, :destroy, :checkout_book, :return_book ]
+  before_action :set_borrower, only: [ :show, :edit, :update, :destroy, :checkout_book, :return_book, :reading_list_export ]
   before_action :require_owner, only: [ :index, :new, :create, :edit, :update, :destroy, :checkout_book, :return_book, :name_check ]
   before_action :require_owner_or_self, only: [ :show ]
 
@@ -44,6 +44,27 @@ class BorrowersController < ApplicationController
       borrowers: borrowers.map { |b| { id: b.id, name: b.name, email: b.email } },
       accounts: accounts.map { |u| { id: u.id, name: u.name, email_address: u.email_address, member: u.borrower_id.present? } }
     }
+  end
+
+  # GET /borrowers/1/reading_list_export.csv — the member's own
+  # reading list (all three shelves, in the order they appear on
+  # the page) with their ratings and notes. Theirs alone to export.
+  def reading_list_export
+    unless current_user&.borrower == @borrower
+      return render plain: "You can only export your own reading list.", status: :forbidden
+    end
+
+    require "csv"
+    statuses = @borrower.reading_statuses.includes(:book).sort_by do |status|
+      [ status.status, status.book.author.to_s.downcase, status.book.title.to_s.downcase ]
+    end
+    csv = CSV.generate do |rows|
+      rows << [ "Title", "Author", "List", "Rating", "Notes" ]
+      statuses.each do |status|
+        rows << [ status.book.title, status.book.author, status.status.humanize, status.rating, status.notes ]
+      end
+    end
+    send_data csv, filename: "reading-list-#{Date.current}.csv", type: "text/csv"
   end
 
   # GET /borrowers/new

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_25_000007) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_25_000009) do
   create_table "books", force: :cascade do |t|
     t.string "author"
     t.boolean "available"
@@ -19,10 +19,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_25_000007) do
     t.text "description"
     t.string "genre"
     t.boolean "in_library", default: true, null: false
+    t.string "isbn"
     t.integer "published_year"
     t.integer "rating"
     t.string "title"
     t.datetime "updated_at", null: false
+    t.index ["isbn"], name: "index_books_on_isbn"
   end
 
   create_table "borrow_requests", force: :cascade do |t|
@@ -58,6 +60,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_25_000007) do
     t.datetime "checked_out_at", null: false
     t.datetime "created_at", null: false
     t.datetime "due_date", null: false
+    t.datetime "due_soon_reminder_sent_at"
+    t.datetime "due_today_reminder_sent_at"
     t.datetime "returned_at"
     t.datetime "updated_at", null: false
     t.index ["book_id", "returned_at"], name: "index_loans_on_book_id_and_returned_at"

@@ -100,17 +100,17 @@ function NavBar() {
               </Link>
             </li>
           )}
-          {!isOwner && myBorrowerId && (
+          {myBorrowerId && (
             <li>
               <Link
-                to={`/borrowers/${myBorrowerId}`}
+                to="/my-books"
                 className={`px-4 py-2 inline-block transition-all border-l border-amber-700 ${
-                  isActive("/borrowers")
+                  isActive("/my-books")
                     ? "bg-amber-100 text-amber-950 font-semibold"
                     : "hover:bg-amber-800"
                 }`}
               >
-                My Reading List
+                My Books
               </Link>
             </li>
           )}
@@ -205,18 +205,18 @@ function NavBar() {
                 </Link>
               </li>
             )}
-            {!isOwner && myBorrowerId && (
+            {myBorrowerId && (
               <li>
                 <Link
-                  to={`/borrowers/${myBorrowerId}`}
+                  to="/my-books"
                   className={`block px-6 py-3 transition-all ${
-                    isActive("/borrowers")
+                    isActive("/my-books")
                       ? "bg-amber-100 text-amber-950 font-semibold"
                       : "hover:bg-amber-700"
                   }`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  📖 My Reading List
+                  📖 My Books
                 </Link>
               </li>
             )}

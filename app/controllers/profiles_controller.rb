@@ -33,6 +33,19 @@ class ProfilesController < ApplicationController
     end
   end
 
+  # POST /profile/become_member: the owner gives her own account the
+  # member side too (personal lists, a My Books page). Membership is
+  # granted, never automatic, for everyone else; the owner granting
+  # it to herself is the one self-serve case.
+  def become_member
+    unless owner?
+      return render json: { error: "Only the owner can do that." }, status: :forbidden
+    end
+
+    current_user.activate_membership!
+    render json: { ok: true, borrower_id: current_user.borrower_id }
+  end
+
   private
 
   def password_params

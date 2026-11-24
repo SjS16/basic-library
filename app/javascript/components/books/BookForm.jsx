@@ -25,6 +25,15 @@ function BookForm({ book, onChange }) {
         />
       </FormField>
 
+      <FormField label="ISBN:">
+        <input
+          type="text"
+          value={book.isbn || ""}
+          onChange={(e) => handleChange("isbn", e.target.value)}
+          className="w-full p-2 text-sm sm:text-base border rounded mb-3 sm:mb-4"
+        />
+      </FormField>
+
       <FormField label="Description:">
         <textarea
           value={book.description || ""}

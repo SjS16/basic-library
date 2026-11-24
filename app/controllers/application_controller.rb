@@ -23,4 +23,13 @@ class ApplicationController < ActionController::Base
 
     redirect_to root_path, alert: "That part of the library is for the owner only."
   end
+
+  # Mail must never break the request that triggered it: an SMTP
+  # hiccup (or mail simply not being configured yet) shouldn't fail
+  # a borrow request, so delivery errors are logged and swallowed.
+  def deliver_safely(mail)
+    mail.deliver_now
+  rescue StandardError => e
+    Rails.logger.error("Mail delivery failed: #{e.class}: #{e.message}")
+  end
 end

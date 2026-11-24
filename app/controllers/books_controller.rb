@@ -1,6 +1,6 @@
 class BooksController < ApplicationController
   before_action :set_book, only: %i[ show edit update destroy ]
-  before_action :require_owner, only: %i[ new create edit update destroy ]
+  before_action :require_owner, only: %i[ new create edit update destroy export ]
 
   # GET /books or /books.json
   def index
@@ -9,6 +9,21 @@ class BooksController < ApplicationController
       format.html # normal Rails HTML
       format.json { render json: @books } # JSON endpoint
     end
+  end
+
+  # GET /books/export.csv — owner only. The whole collection as a
+  # spreadsheet file, so the catalogue exists somewhere besides
+  # this database. Includes wishlist records, flagged as such.
+  def export
+    require "csv"
+    csv = CSV.generate do |rows|
+      rows << [ "Title", "Author", "Genre", "Published Year", "ISBN", "Rating", "Available", "In Library", "Added" ]
+      Book.order(:author, :title).find_each do |book|
+        rows << [ book.title, book.author, book.genre, book.published_year, book.isbn, book.rating,
+                  book.available ? "Yes" : "No", book.in_library ? "Yes" : "No", book.created_at.to_date ]
+      end
+    end
+    send_data csv, filename: "library-catalogue-#{Date.current}.csv", type: "text/csv"
   end
 
   # GET /books/1 or /books/1.json
@@ -53,9 +68,15 @@ class BooksController < ApplicationController
     # If a member previously wished for this book, its record exists
     # flagged as not in the library. Adding it for real claims that
     # record, so members' lists now point at the owner's copy.
-    existing = Book.where("lower(title) = :title AND lower(author) = :author",
-                          title: book_params[:title].to_s.strip.downcase,
-                          author: book_params[:author].to_s.strip.downcase).first
+    # An ISBN from Open Library is the strongest match; title +
+    # author is the fallback.
+    existing = nil
+    if book_params[:isbn].present?
+      existing = Book.where(isbn: book_params[:isbn].to_s.strip).first
+    end
+    existing ||= Book.where("lower(title) = :title AND lower(author) = :author",
+                            title: book_params[:title].to_s.strip.downcase,
+                            author: book_params[:author].to_s.strip.downcase).first
     @book = (existing && !existing.in_library?) ? existing : Book.new(book_params)
 
     saved = if @book.new_record?
@@ -106,6 +127,6 @@ class BooksController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def book_params
-      params.require(:book).permit(:title, :author, :description, :published_year, :available, :genre, :rating, :cover_url)
+      params.require(:book).permit(:title, :author, :description, :published_year, :available, :genre, :rating, :cover_url, :isbn)
     end
 end

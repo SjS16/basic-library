@@ -280,6 +280,18 @@ function ShowBook() {
                     {" "}· due {new Date(book.current_loan.due_date).toLocaleDateString()}
                   </span>
                 </p>
+                {isOwner && (
+                  <>
+                    <button
+                      onClick={handleReturn}
+                      disabled={checkoutBusy}
+                      className="mt-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-50 text-sm font-medium disabled:opacity-50"
+                    >
+                      Mark returned
+                    </button>
+                    {checkoutError && <p className="text-sm text-red-700 mt-2">{checkoutError}</p>}
+                  </>
+                )}
               </div>
             )}
 
@@ -360,26 +372,13 @@ function ShowBook() {
             </div>
           )}
 
-          {/* Owner lending panel: lend to a member, quick-add someone
-              by name only, or mark the book returned. */}
-          {book.id && book.in_library && isOwner && (
+          {/* Owner lending panel, for available books. When the book
+              is out, the return action lives with the Checked out
+              to line above instead. */}
+          {book.id && book.in_library && isOwner && book.available && (
             <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t">
-              <h2 className="text-lg font-bold mb-3">
-                {book.available ? "Lend this book" : "On loan"}
-              </h2>
-              {!book.available ? (
-                <div>
-                  <button
-                    onClick={handleReturn}
-                    disabled={checkoutBusy}
-                    className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-50 text-sm font-medium disabled:opacity-50"
-                  >
-                    Mark returned
-                  </button>
-                  {checkoutError && <p className="text-sm text-red-700 mt-2">{checkoutError}</p>}
-                </div>
-              ) : (
-                <div>
+              <h2 className="text-lg font-bold mb-3">Lend this book</h2>
+              <div>
                   <div className="flex flex-col sm:flex-row gap-2">
                     <select
                       value={selectedMemberId}
@@ -468,8 +467,7 @@ function ShowBook() {
                   )}
 
                   {checkoutError && <p className="text-sm text-red-700 mt-2">{checkoutError}</p>}
-                </div>
-              )}
+              </div>
             </div>
           )}
 
