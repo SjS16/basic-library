@@ -7,6 +7,8 @@ class UserTest < ActiveSupport::TestCase
   end
 
   test "the first account created becomes the owner, later ones do not" do
+    # The fixture library's owner reference would block deleting users.
+    BookLibrary.update_all(owner_id: nil)
     User.delete_all
     first = User.create!(email_address: "first@example.com", password: "password")
     second = User.create!(email_address: "second@example.com", password: "password")

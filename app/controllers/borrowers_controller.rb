@@ -5,7 +5,7 @@ class BorrowersController < ApplicationController
 
   # GET /borrowers or /borrowers.json
   def index
-    @borrowers = Borrower.all.order(standing: :desc)
+    @borrowers = current_library.borrowers.order(standing: :desc)
     respond_to do |format|
       format.html
       format.json { render json: @borrowers.as_json(methods: [ :overdue_books_count ]) }

@@ -4,13 +4,16 @@ excellent_borrower:
   name: "John Doe"
   email: "john@example.com"
   standing: 100
+  book_library: main
 
 good_borrower:
   name: "Jane Smith"
   email: "jane@example.com"
   standing: 80
+  book_library: main
 
 low_standing_borrower:
   name: "Bob Wilson"
   email: "bob@example.com"
   standing: 40
+  book_library: main

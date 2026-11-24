@@ -6,7 +6,7 @@ class ApplicationController < ActionController::Base
   # Changes to the importmap will invalidate the etag for HTML responses
   stale_when_importmap_changes
 
-  helper_method :current_user, :owner?
+  helper_method :current_user, :owner?, :current_library
 
   private
 
@@ -16,6 +16,13 @@ class ApplicationController < ActionController::Base
 
   def owner?
     current_user&.owner? || false
+  end
+
+  # Phase 1 of multi-library: there is still exactly one library,
+  # and scoped reads run through it. Later phases resolve the
+  # library from the signed-in user's ownerships and memberships.
+  def current_library
+    @current_library ||= BookLibrary.default_library
   end
 
   def require_owner

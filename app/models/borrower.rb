@@ -8,6 +8,9 @@ class Borrower < ApplicationRecord
   has_many :books_to_read, -> { where(reading_statuses: { status: 0 }) }, through: :reading_statuses, source: :book
   has_many :books_reading, -> { where(reading_statuses: { status: 1 }) }, through: :reading_statuses, source: :book
   has_many :books_read, -> { where(reading_statuses: { status: 2 }) }, through: :reading_statuses, source: :book
+  belongs_to :book_library, optional: true
+
+  before_validation :assign_book_library, on: :create
 
   validates :name, presence: true
   validates :email, uniqueness: true, allow_blank: true
@@ -42,6 +45,12 @@ class Borrower < ApplicationRecord
   # with the member's name.
   def overdue_books_count
     overdue_loans.count
+  end
+
+  # Every member belongs to a library. Until multi-library lands
+  # there is only one, so anyone created without one joins it.
+  def assign_book_library
+    self.book_library ||= BookLibrary.default_library
   end
 
   # Calculate and update standing based on loan history.

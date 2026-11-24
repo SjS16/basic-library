@@ -8,6 +8,7 @@ available_book:
   available: true
   genre: "Fiction"
   rating: 5
+  book_library: main
 
 checked_out_book:
   title: "1984"
@@ -17,6 +18,7 @@ checked_out_book:
   available: false
   genre: "Science Fiction"
   rating: 4
+  book_library: main
 
 another_available_book:
   title: "To Kill a Mockingbird"
@@ -26,3 +28,4 @@ another_available_book:
   available: true
   genre: "Fiction"
   rating: 5
+  book_library: main

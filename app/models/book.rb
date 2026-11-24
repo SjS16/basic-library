@@ -3,6 +3,9 @@ class Book < ApplicationRecord
   has_many :borrowers, through: :loans
   has_many :reading_statuses, dependent: :destroy
   has_many :borrow_requests, dependent: :destroy
+  belongs_to :book_library, optional: true
+
+  before_validation :assign_book_library, on: :create
 
   # When a wished-for book joins the library, the members who have
   # it on their to-be-read list get an in-app notification.
@@ -15,8 +18,9 @@ class Book < ApplicationRecord
   validates :title, presence: true
   validate :no_duplicate_title_and_author
   # An ISBN identifies one edition; two records sharing one would
-  # be the same book twice. Blank is fine (older records have none).
-  validates :isbn, uniqueness: true, allow_blank: true
+  # be the same book twice, within the same library. Blank is fine
+  # (older records have none).
+  validates :isbn, uniqueness: { scope: :book_library_id }, allow_blank: true
 
   # Get current loan (if book is checked out)
   def current_loan
@@ -35,6 +39,12 @@ class Book < ApplicationRecord
 
   private
 
+  # Every book belongs to a library. Until multi-library lands
+  # there is only one, so anything created without one joins it.
+  def assign_book_library
+    self.book_library ||= BookLibrary.default_library
+  end
+
   def notify_readers_of_arrival
     reading_statuses.want_to_read.find_each do |status|
       user = User.find_by(borrower_id: status.borrower_id)
@@ -51,10 +61,13 @@ class Book < ApplicationRecord
   # An edition note makes a copy distinct: two copies of the same
   # book are allowed when their editions differ (including one
   # with a note and one without).
+  # The comparison stays inside the book's own library: another
+  # library owning the same book is not a duplicate.
   def no_duplicate_title_and_author
     return if title.blank?
 
-    duplicate = Book.where("LOWER(title) = ? AND LOWER(COALESCE(author, '')) = ? AND LOWER(COALESCE(edition, '')) = ?",
+    duplicate = Book.where(book_library_id: book_library_id)
+                    .where("LOWER(title) = ? AND LOWER(COALESCE(author, '')) = ? AND LOWER(COALESCE(edition, '')) = ?",
                            title.strip.downcase, author.to_s.strip.downcase, edition.to_s.strip.downcase)
     duplicate = duplicate.where.not(id: id) if persisted?
     errors.add(:title, "is already in the library for this author and edition — add an edition note to keep another copy") if duplicate.exists?

@@ -4,7 +4,7 @@ class BooksController < ApplicationController
 
   # GET /books or /books.json
   def index
-    @books = Book.in_library
+    @books = current_library.books.in_library
     respond_to do |format|
       format.html # normal Rails HTML
       format.json { render json: @books } # JSON endpoint
@@ -18,7 +18,7 @@ class BooksController < ApplicationController
     require "csv"
     csv = CSV.generate do |rows|
       rows << [ "Title", "Author", "Edition", "Genre", "Published Year", "ISBN", "Rating", "Available", "In Library", "Added" ]
-      Book.order(:author, :title).find_each do |book|
+      current_library.books.order(:author, :title).find_each do |book|
         rows << [ book.title, book.author, book.edition, book.genre, book.published_year, book.isbn, book.rating,
                   book.available ? "Yes" : "No", book.in_library ? "Yes" : "No", book.created_at.to_date ]
       end
@@ -79,9 +79,9 @@ class BooksController < ApplicationController
     # author is the fallback.
     existing = nil
     if book_params[:isbn].present?
-      existing = Book.where(isbn: book_params[:isbn].to_s.strip).first
+      existing = current_library.books.where(isbn: book_params[:isbn].to_s.strip).first
     end
-    existing ||= Book.where("lower(title) = :title AND lower(author) = :author",
+    existing ||= current_library.books.where("lower(title) = :title AND lower(author) = :author",
                             title: book_params[:title].to_s.strip.downcase,
                             author: book_params[:author].to_s.strip.downcase).first
     @book = (existing && !existing.in_library?) ? existing : Book.new(book_params)

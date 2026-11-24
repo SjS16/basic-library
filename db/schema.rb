@@ -10,10 +10,19 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_25_000013) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_25_000014) do
+  create_table "book_libraries", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "name", default: "My Library", null: false
+    t.integer "owner_id"
+    t.datetime "updated_at", null: false
+    t.index ["owner_id"], name: "index_book_libraries_on_owner_id"
+  end
+
   create_table "books", force: :cascade do |t|
     t.string "author"
     t.boolean "available"
+    t.integer "book_library_id"
     t.text "cover_url"
     t.datetime "created_at", null: false
     t.text "description"
@@ -25,6 +34,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_25_000013) do
     t.integer "rating"
     t.string "title"
     t.datetime "updated_at", null: false
+    t.index ["book_library_id"], name: "index_books_on_book_library_id"
     t.index ["isbn"], name: "index_books_on_isbn"
   end
 
@@ -40,11 +50,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_25_000013) do
   end
 
   create_table "borrowers", force: :cascade do |t|
+    t.integer "book_library_id"
     t.datetime "created_at", null: false
     t.string "email"
     t.string "name", null: false
     t.integer "standing", default: 100, null: false
     t.datetime "updated_at", null: false
+    t.index ["book_library_id"], name: "index_borrowers_on_book_library_id"
     t.index ["email"], name: "index_borrowers_on_email", unique: true
   end
 
@@ -160,8 +172,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_25_000013) do
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
   end
 
+  add_foreign_key "book_libraries", "users", column: "owner_id"
+  add_foreign_key "books", "book_libraries"
   add_foreign_key "borrow_requests", "books"
   add_foreign_key "borrow_requests", "borrowers"
+  add_foreign_key "borrowers", "book_libraries"
   add_foreign_key "loans", "books"
   add_foreign_key "loans", "borrowers"
   add_foreign_key "membership_invites", "users"

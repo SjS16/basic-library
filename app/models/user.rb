@@ -4,6 +4,7 @@ class User < ApplicationRecord
   has_many :membership_requests, dependent: :destroy
   has_many :membership_invites, dependent: :destroy
   has_many :notifications, dependent: :destroy
+  has_one :owned_library, class_name: "BookLibrary", foreign_key: :owner_id, dependent: :nullify
   belongs_to :borrower, optional: true
 
   normalizes :email_address, with: ->(e) { e.strip.downcase }
