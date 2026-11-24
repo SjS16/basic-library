@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getAuthHeaders } from "../../utils/csrf";
 import { useOpenLibrarySearch } from "../../hooks/useOpenLibrarySearch";
-import { fetchBookDetails, fetchBookByISBN, fetchBookByTitleAuthor } from "../../utils/openLibraryApi";
+import { fetchBookDetails, fetchBookByISBN, findEnrichment, enrichableFields, fetchCoverOptions } from "../../utils/openLibraryApi";
 import SearchResults from "./SearchResults";
 import BookForm from "./BookForm";
 import BarcodeScanner from "./BarcodeScanner";
@@ -24,6 +24,10 @@ function EditBook() {
   const [olChecking, setOlChecking] = useState(false);
   const olCheckedForId = useRef(null);
 
+  const [coverOptions, setCoverOptions] = useState([]);
+  const [coverLoading, setCoverLoading] = useState(false);
+  const [coverNote, setCoverNote] = useState(null);
+
   useEffect(() => {
     if (id) {
       fetch(`/books/${id}.json`)
@@ -33,32 +37,16 @@ function EditBook() {
     }
   }, [id]);
 
-  // Fields Open Library is allowed to fill in on the edit page.
-  // It only ever adds to blanks; it never overwrites what's here.
-  const FILLABLE_FIELDS = [
-    ["cover_url", "a cover image"],
-    ["description", "a description"],
-    ["published_year", "the published year"],
-    ["genre", "a genre"],
-    ["isbn", "an ISBN"],
-  ];
-
-  const fillableFrom = (suggestion, current) =>
-    FILLABLE_FIELDS.filter(([field]) => suggestion?.[field] && !current?.[field]);
+  // Which fields Open Library may fill, and the fill-blanks-only
+  // rule, are shared with the bulk fill page (see openLibraryApi).
+  const fillableFrom = enrichableFields;
 
   const checkOpenLibrary = async (current, { quiet = true } = {}) => {
     if (!current?.title) return;
     setOlChecking(true);
     try {
-      let details = null;
-      if (current.isbn) {
-        details = await fetchBookByISBN(current.isbn).catch(() => null);
-      }
-      if (!details || fillableFrom(details, current).length === 0) {
-        const bySearch = await fetchBookByTitleAuthor(current.title, current.author).catch(() => null);
-        if (bySearch && fillableFrom(bySearch, current).length > 0) details = bySearch;
-      }
-      if (details && fillableFrom(details, current).length > 0) {
+      const details = await findEnrichment(current);
+      if (details) {
         setOlSuggestion(details);
         setOlNote(null);
       } else {
@@ -90,6 +78,21 @@ function EditBook() {
       return merged;
     });
     setOlSuggestion(null);
+  };
+
+  const loadCoverOptions = async () => {
+    if (!book.title) return;
+    setCoverLoading(true);
+    setCoverNote(null);
+    try {
+      const options = await fetchCoverOptions(book.title, book.author);
+      setCoverOptions(options);
+      if (options.length === 0) setCoverNote("Open Library doesn't have covers for this book.");
+    } catch (err) {
+      setCoverNote("The cover search failed. Try again in a moment.");
+    } finally {
+      setCoverLoading(false);
+    }
   };
 
   const handleTitleChange = (value) => {
@@ -257,6 +260,56 @@ function EditBook() {
       />
 
       <BookForm book={book} onChange={setBook} />
+
+      {/* Cover editor: pick a different Open Library cover, paste any
+          image URL, or remove the cover. Saves with Save Changes. */}
+      <div className="mt-4 p-3 border rounded-lg">
+        <p className="text-sm sm:text-base text-gray-700 font-medium mb-2">Cover image</p>
+        <label className="block text-xs sm:text-sm text-gray-700 mb-1">Image URL:</label>
+        <input
+          type="text"
+          value={book.cover_url || ""}
+          onChange={(e) => setBook({ ...book, cover_url: e.target.value })}
+          placeholder="https://…"
+          className="w-full p-2 text-sm sm:text-base border rounded mb-2"
+        />
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={loadCoverOptions}
+            disabled={coverLoading || !book.title}
+            className="px-3 py-1.5 bg-amber-800 text-amber-50 rounded text-sm hover:bg-amber-900 disabled:opacity-50"
+          >
+            {coverLoading ? "Looking…" : "Find covers on Open Library"}
+          </button>
+          {book.cover_url && (
+            <button
+              onClick={() => setBook({ ...book, cover_url: "" })}
+              className="px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded text-sm hover:bg-gray-50"
+            >
+              Remove cover
+            </button>
+          )}
+        </div>
+        {coverNote && <p className="text-sm text-gray-500 mt-2">{coverNote}</p>}
+        {coverOptions.length > 0 && (
+          <div className="flex flex-wrap gap-2 mt-3">
+            {coverOptions.map((url) => (
+              <button
+                key={url}
+                onClick={() => setBook({ ...book, cover_url: url })}
+                className={`rounded overflow-hidden ${book.cover_url === url ? "ring-2 ring-amber-800" : "ring-1 ring-gray-200 hover:ring-amber-500"}`}
+                title="Use this cover"
+              >
+                <img src={url.replace("-L.jpg", "-M.jpg")} alt="" className="w-16 block" />
+              </button>
+            ))}
+          </div>
+        )}
+        <p className="text-xs text-gray-500 mt-2">
+          Pick a cover or paste a link, then Save Changes. A cover you choose won't be
+          overwritten by the Open Library fill, which only adds to blank fields.
+        </p>
+      </div>
 
       <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 sm:gap-3 mt-4 sm:mt-6">
         <button

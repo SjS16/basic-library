@@ -7,6 +7,7 @@ import BooksList from "./components/books/BooksList";
 import ShowBook from "./components/books/ShowBook";
 import EditBook from "./components/books/EditBook";
 import ImportBooks from "./components/books/ImportBooks";
+import EnrichBooks from "./components/books/EnrichBooks";
 import BorrowersList from "./components/borrowers/BorrowersList";
 import ShowBorrower from "./components/borrowers/ShowBorrower";
 import EditBorrower from "./components/borrowers/EditBorrower";
@@ -54,6 +55,7 @@ function App() {
           <Route path="/books/:id/edit" element={<OwnerOnly><EditBook /></OwnerOnly>} />
           <Route path="/books/new" element={<OwnerOnly><EditBook /></OwnerOnly>} />
           <Route path="/books/import" element={<OwnerOnly><ImportBooks /></OwnerOnly>} />
+          <Route path="/books/enrich" element={<OwnerOnly><EnrichBooks /></OwnerOnly>} />
 
           <Route path="/borrowers" element={<OwnerOnly><BorrowersList /></OwnerOnly>} />
           <Route path="/borrowers/:id" element={<BorrowerPage><ShowBorrower /></BorrowerPage>} />

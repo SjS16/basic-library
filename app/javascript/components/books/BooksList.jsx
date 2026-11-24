@@ -141,6 +141,12 @@ function BooksList() {
             <div className="flex flex-col sm:flex-row gap-2">
               <button
                 className="px-4 sm:px-6 py-2 sm:py-3 bg-white border-2 border-amber-900 text-amber-900 rounded-lg hover:bg-amber-100 shadow transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base whitespace-nowrap font-medium"
+                onClick={() => navigate("/books/enrich")}
+              >
+                Fill Missing Details
+              </button>
+              <button
+                className="px-4 sm:px-6 py-2 sm:py-3 bg-white border-2 border-amber-900 text-amber-900 rounded-lg hover:bg-amber-100 shadow transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base whitespace-nowrap font-medium"
                 onClick={() => navigate("/books/import")}
               >
                 Import CSV
