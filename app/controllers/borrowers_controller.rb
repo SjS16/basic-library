@@ -105,7 +105,22 @@ class BorrowersController < ApplicationController
   end
 
   # DELETE /borrowers/1 or /borrowers/1.json
+  # Refuses while the member still has books out: destroying the
+  # record would destroy the open loans with it and leave those
+  # books marked unavailable forever. A linked login account is
+  # unlinked, not deleted — it just stops being a member.
   def destroy
+    if @borrower.current_loans.exists?
+      titles = @borrower.current_loans.includes(:book).map { |loan| loan.book.title }
+      message = "#{@borrower.name} still has #{titles.size} #{'book'.pluralize(titles.size)} out (#{titles.join(', ')}). Mark them returned before removing this member."
+      respond_to do |format|
+        format.html { redirect_to borrowers_path, alert: message }
+        format.json { render json: { error: message }, status: :unprocessable_entity }
+      end
+      return
+    end
+
+    User.where(borrower: @borrower).update_all(borrower_id: nil)
     @borrower.destroy!
 
     respond_to do |format|

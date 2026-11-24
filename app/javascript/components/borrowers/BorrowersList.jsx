@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { getAuthHeaders } from "../../utils/csrf";
+import Pagination from "../Pagination";
+
+const BORROWERS_PER_PAGE = 20;
 
 function BorrowersList() {
   const [borrowers, setBorrowers] = useState([]);
+  const [page, setPage] = useState(1);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -82,6 +86,23 @@ function BorrowersList() {
     }
   };
 
+  const handleDelete = (borrower) => {
+    if (!window.confirm(`Remove ${borrower.name} from the library? Their reading lists and loan history will be deleted too. This can't be undone.`)) return;
+    fetch(`/borrowers/${borrower.id}.json`, {
+      method: "DELETE",
+      headers: getAuthHeaders(),
+    })
+      .then(async (res) => {
+        if (res.ok) {
+          setBorrowers(borrowers.filter((b) => b.id !== borrower.id));
+        } else {
+          const data = await res.json().catch(() => ({}));
+          alert(data.error || "Could not remove this member.");
+        }
+      })
+      .catch(() => alert("Could not remove this member."));
+  };
+
   const getStandingColor = (standing) => {
     if (standing >= 90) return "green";
     if (standing >= 70) return "blue";
@@ -106,6 +127,10 @@ function BorrowersList() {
       </span>
     );
   };
+
+  const totalPages = Math.ceil(borrowers.length / BORROWERS_PER_PAGE);
+  const currentPage = Math.min(page, Math.max(totalPages, 1));
+  const pageBorrowers = borrowers.slice((currentPage - 1) * BORROWERS_PER_PAGE, currentPage * BORROWERS_PER_PAGE);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -239,7 +264,7 @@ function BorrowersList() {
         </div>
       ) : (
         <div className="space-y-3">
-          {borrowers.map((borrower) => (
+          {pageBorrowers.map((borrower) => (
             <div
               key={borrower.id}
               className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-200 overflow-hidden border border-gray-100"
@@ -275,12 +300,24 @@ function BorrowersList() {
                     <span className="hidden sm:inline">View Details →</span>
                     <span className="sm:hidden">View →</span>
                   </Link>
+                  <button
+                    onClick={() => handleDelete(borrower)}
+                    className="px-3 sm:px-4 py-2 text-sm sm:text-base text-red-600 hover:bg-red-50 rounded-lg transition-colors font-medium whitespace-nowrap"
+                  >
+                    Remove
+                  </button>
                 </div>
               </div>
             </div>
           ))}
         </div>
       )}
+      {totalPages > 1 && (
+        <p className="text-center text-sm text-gray-500 mt-6">
+          Showing {(currentPage - 1) * BORROWERS_PER_PAGE + 1}–{Math.min(currentPage * BORROWERS_PER_PAGE, borrowers.length)} of {borrowers.length} members
+        </p>
+      )}
+      <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setPage} />
     </div>
   );
 }

@@ -6,7 +6,9 @@ import BookSort from "../books/bookListHelpers/BookSort";
 import BookItem from "../books/bookListHelpers/BookItem";
 import { getAuthHeaders } from "../../utils/csrf";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
+import Pagination from "../Pagination";
 
+const BOOKS_PER_PAGE = 20;
 
 function BooksList() {
   const navigate = useNavigate();
@@ -15,6 +17,7 @@ function BooksList() {
   const isOwner = !!currentUser?.owner;
   const [allBooks, setAllBooks] = useState([]);
   const [filteredBooks, setFilteredBooks] = useState([]);
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     fetch("/books.json")
@@ -27,6 +30,7 @@ function BooksList() {
   }, [location.key]);
 
   const handleSearch = (query) => {
+    setPage(1);
     if (!query || query.length < 2) {
       setFilteredBooks(allBooks);
     } else {
@@ -41,6 +45,7 @@ function BooksList() {
   };
 
   const handleFilter = (status) => {
+    setPage(1);
     if (status === "all") {
       setFilteredBooks(allBooks);
     } else {
@@ -59,6 +64,7 @@ function BooksList() {
   };
 
   const handleSort = (sortBy) => {
+    setPage(1);
     const sorted = [...filteredBooks].sort((a, b) => {
       if (sortBy === "title") {
         const titleA = a.title || "";
@@ -117,6 +123,10 @@ function BooksList() {
         .catch((err) => console.error("Error deleting book:", err));
     }
   };
+
+  const totalPages = Math.ceil(filteredBooks.length / BOOKS_PER_PAGE);
+  const currentPage = Math.min(page, Math.max(totalPages, 1));
+  const pageBooks = filteredBooks.slice((currentPage - 1) * BOOKS_PER_PAGE, currentPage * BOOKS_PER_PAGE);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -216,18 +226,26 @@ function BooksList() {
           )}
         </div>
       ) : (
-        <div className="space-y-3">
-          {filteredBooks.map((book) => (
-            <BookItem
-              key={book.id}
-              book={book}
-              isOwner={isOwner}
-              handleEdit={handleEdit}
-              handleDelete={handleDelete}
-              navigate={navigate}
-            />
-          ))}
-        </div>
+        <>
+          <div className="space-y-3">
+            {pageBooks.map((book) => (
+              <BookItem
+                key={book.id}
+                book={book}
+                isOwner={isOwner}
+                handleEdit={handleEdit}
+                handleDelete={handleDelete}
+                navigate={navigate}
+              />
+            ))}
+          </div>
+          {totalPages > 1 && (
+            <p className="text-center text-sm text-gray-500 mt-6">
+              Showing {(currentPage - 1) * BOOKS_PER_PAGE + 1}–{Math.min(currentPage * BOOKS_PER_PAGE, filteredBooks.length)} of {filteredBooks.length} books
+            </p>
+          )}
+          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setPage} />
+        </>
       )}
     </div>
   );
