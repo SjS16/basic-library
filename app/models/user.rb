@@ -8,6 +8,11 @@ class User < ApplicationRecord
 
   normalizes :email_address, with: ->(e) { e.strip.downcase }
 
+  # A floor under password length: has_secure_password checks
+  # that a password is present but sets no minimum, so without
+  # this a one-character password would pass.
+  validates :password, length: { minimum: 8 }, allow_nil: true
+
   before_create :claim_borrower_record
   before_create :make_first_user_owner
 

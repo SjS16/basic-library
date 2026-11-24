@@ -9,8 +9,11 @@ class PasswordsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "create" do
-    post passwords_path, params: { email_address: @user.email_address }
-    assert_enqueued_email_with PasswordsMailer, :reset, args: [ @user ]
+    # The reset mail is delivered immediately, not enqueued: the
+    # app has no working background queue in production.
+    assert_emails 1 do
+      post passwords_path, params: { email_address: @user.email_address }
+    end
     assert_redirected_to new_session_path
 
     follow_redirect!
@@ -18,8 +21,9 @@ class PasswordsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "create for an unknown user redirects but sends no mail" do
-    post passwords_path, params: { email_address: "missing-user@example.com" }
-    assert_enqueued_emails 0
+    assert_emails 0 do
+      post passwords_path, params: { email_address: "missing-user@example.com" }
+    end
     assert_redirected_to new_session_path
 
     follow_redirect!
@@ -41,7 +45,7 @@ class PasswordsControllerTest < ActionDispatch::IntegrationTest
 
   test "update" do
     assert_changes -> { @user.reload.password_digest } do
-      put password_path(@user.password_reset_token), params: { password: "new", password_confirmation: "new" }
+      put password_path(@user.password_reset_token), params: { password: "new_password", password_confirmation: "new_password" }
       assert_redirected_to new_session_path
     end
 
@@ -52,7 +56,7 @@ class PasswordsControllerTest < ActionDispatch::IntegrationTest
   test "update with non matching passwords" do
     token = @user.password_reset_token
     assert_no_changes -> { @user.reload.password_digest } do
-      put password_path(token), params: { password: "no", password_confirmation: "match" }
+      put password_path(token), params: { password: "new_password", password_confirmation: "different_password" }
       assert_redirected_to edit_password_path(token)
     end
 

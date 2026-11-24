@@ -36,4 +36,15 @@ class UserTest < ActiveSupport::TestCase
       user.activate_membership!
     end
   end
+
+  test "a password shorter than eight characters is rejected" do
+    user = User.new(email_address: "short@example.com", password: "short12")
+    assert_not user.valid?
+    assert user.errors[:password].present?
+  end
+
+  test "an eight character password is accepted" do
+    user = User.new(email_address: "eight@example.com", password: "12345678")
+    assert user.valid?
+  end
 end

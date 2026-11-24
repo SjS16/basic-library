@@ -8,7 +8,12 @@ class PasswordsController < ApplicationController
 
   def create
     if user = User.find_by(email_address: params[:email_address])
-      PasswordsMailer.reset(user).deliver_later
+      # deliver_now, not deliver_later: there is no working
+      # background queue in production (Solid Queue's tables were
+      # never migrated to the production database), so a queued
+      # reset email would never leave. Every other mail in the
+      # app sends immediately too.
+      PasswordsMailer.reset(user).deliver_now
     end
 
     redirect_to new_session_path, notice: "Password reset instructions sent (if user with that email address exists)."
