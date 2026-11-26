@@ -69,6 +69,10 @@ gem "jsbundling-rails", "~> 1.3"
 
 gem "tailwindcss-rails", "~> 4.4"
 
+# Send mail through Resend's HTTPS API (Render's free tier blocks
+# outbound SMTP ports, so SMTP from production can only time out)
+gem "resend"
+
 group :production do
   # Production runs on Postgres (Neon); SQLite stays for development and test.
   gem "pg", "~> 1.5"

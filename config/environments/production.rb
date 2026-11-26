@@ -61,12 +61,19 @@ Rails.application.configure do
   # APP_HOST is the app's public host on Render (no scheme).
   config.action_mailer.default_url_options = { host: ENV.fetch("APP_HOST", "example.com"), protocol: "https" }
 
-  # Outgoing mail goes through any SMTP provider, configured purely
-  # by environment variables. (Resend works with: address
+  # Outgoing mail prefers Resend's HTTPS API: Render's free tier
+  # blocks outbound SMTP ports (25, 465, 587), so SMTP from the live
+  # service can only hang and time out. The API key comes from
+  # RESEND_API_KEY, falling back to SMTP_PASSWORD, which for Resend
+  # is an API key already (see config/initializers/resend.rb).
+  # SMTP stays as a fallback for hosts that allow it, configured
+  # purely by environment variables. (Resend works with: address
   # smtp.resend.com, port 587, user_name "resend", password = the
-  # API key.) When SMTP_ADDRESS is not set, no delivery method is
-  # configured and the app simply runs without sending, as before.
-  if ENV["SMTP_ADDRESS"].present?
+  # API key.) When neither is set, no delivery method is configured
+  # and the app simply runs without sending, as before.
+  if ENV["RESEND_API_KEY"].present? || ENV["SMTP_PASSWORD"].present?
+    config.action_mailer.delivery_method = :resend
+  elsif ENV["SMTP_ADDRESS"].present?
     config.action_mailer.delivery_method = :smtp
     config.action_mailer.smtp_settings = {
       address: ENV["SMTP_ADDRESS"],
